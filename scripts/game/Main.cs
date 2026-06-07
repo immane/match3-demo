@@ -13,16 +13,15 @@ public partial class Main : Node2D
 
     public override void _Ready()
     {
-        _titleScreen = GetNode<Control>("TitleScreen");
-        _pauseMenu = GetNode<Control>("PauseMenu");
-        _gameOverPanel = GetNode<Control>("GameOverPanel");
+        _titleScreen = GetNode<Control>("UILayer/TitleScreen");
+        _pauseMenu = GetNode<Control>("UILayer/PauseMenu");
+        _gameOverPanel = GetNode<Control>("UILayer/GameOverPanel");
         _board = GetNode<Board>("Board");
         _hud = GetNode<CanvasLayer>("HUD");
         _camera = GetNode<Camera2D>("Camera2D");
 
         DisplayServer.WindowSetTitle("Match3 Crystal Demo");
 
-        // Connect to TitleScreen's game_started signal
         _titleScreen.Connect("GameStarted", Callable.From(OnGameStarted));
         EventBus.Instance.GameOver += OnGameOver;
 

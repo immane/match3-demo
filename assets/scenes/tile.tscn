@@ -1,21 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://b1xq7k3v0omy8"]
+[gd_scene load_steps=3 format=3 uid="uid://b1xq7k3v0omy8"]
 
-[ext_resource type="Shader" path="res://assets/shaders/crystal.gdshader" id="1_shader"]
 [ext_resource type="Script" path="res://scripts/game/Tile.cs" id="2_script"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_crystal"]
-shader = ExtResource("1_shader")
-shader_parameter/crystal_color = Color(1, 1, 1, 1)
-shader_parameter/time_sec = 0.0
-shader_parameter/glow_amount = 0.3
-shader_parameter/shimmer_speed = 0.5
-shader_parameter/facet_intensity = 0.4
-shader_parameter/fresnel_power = 3.0
-shader_parameter/dispersion_amount = 0.15
-shader_parameter/light_dir = Vector2(0.5, 0.5)
-shader_parameter/is_selected = false
-shader_parameter/is_special = false
-shader_parameter/special_type = -1
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_tile"]
 radius = 32.0
@@ -23,14 +8,14 @@ radius = 32.0
 [node name="Tile" type="Node2D"]
 script = ExtResource("2_script")
 
-[node name="CrystalRect" type="ColorRect" parent="."]
-material = SubResource("ShaderMaterial_crystal")
+[node name="CatTexture" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(64, 64)
 offset_left = -32.0
 offset_top = -32.0
 offset_right = 32.0
 offset_bottom = 32.0
-color = Color(1, 1, 1, 1)
+expand_mode = 1
+stretch_mode = 4
 mouse_filter = 2
 
 [node name="SelectionBorder" type="ColorRect" parent="."]

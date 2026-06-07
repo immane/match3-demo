@@ -91,6 +91,22 @@ public partial class TileManager : Node2D
         return null;
     }
 
+    public void RefreshPositions(BoardData boardData)
+    {
+        if (boardData == null)
+            return;
+        foreach (var kv in _activeTiles)
+        {
+            int index = kv.Key;
+            if (index >= 0 && index < boardData.Cols * boardData.Rows)
+            {
+                var pos = boardData.RowCol(index);
+                kv.Value.BoardPosition = pos;
+                kv.Value.Position = GridUtils.GridToWorld(pos.Y, pos.X);
+            }
+        }
+    }
+
     public void RefreshFromData(BoardData boardData)
     {
         var toRelease = new Godot.Collections.Array<int>();

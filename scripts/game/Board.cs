@@ -8,15 +8,12 @@ public partial class Board : Node2D
     private static readonly Color DarkColor = new("2e2e4a");
     private const int GridCols = 8;
     private const int GridRows = 8;
-    private const int CellSize = 72;
-    private const int OffsetX = 40;
-    private const int OffsetY = 120;
-    private const int CellStep = 76;
 
     private Node2D _tileLayer;
     private Node2D _effectLayer;
     private Node2D _backgroundLayer;
     private InputHandler _inputHandler;
+    private AnimationController _animController;
 
     public GameStateMachine StateMachine { get; private set; }
     public BoardData BoardData { get; private set; }
@@ -31,6 +28,7 @@ public partial class Board : Node2D
         _backgroundLayer = GetNode<Node2D>("BackgroundLayer");
         _inputHandler = GetNode<InputHandler>("InputHandler");
         StateMachine = GetNode<GameStateMachine>("GameStateMachine");
+        _animController = GetNode<AnimationController>("AnimationController");
 
         BoardData = new BoardData(8, 8, 5);
         AddToGroup("board");
@@ -39,15 +37,35 @@ public partial class Board : Node2D
         _tileLayer.AddChild(TileManager);
 
         _inputHandler.ProcessMode = ProcessModeEnum.Disabled;
+        _animController.BoardData = BoardData;
+        _animController.TileManager = TileManager;
         StateMachine.BoardData = BoardData;
         StateMachine.TileManager = TileManager;
+        StateMachine.AnimController = _animController;
         StateMachine.StateChanged += OnStateChanged;
         StateMachine.AddToGroup("state_machine");
 
-        QueueRedraw();
+        RecalculateLayout();
+        GetTree().Root.SizeChanged += RecalculateLayout;
 
         await ToSignal(GetTree(), "process_frame");
         StateMachine.Initialize();
+    }
+
+    private void RecalculateLayout()
+    {
+        var viewportSize = GetViewportRect().Size;
+        GridUtils.Configure(GridCols, GridRows, viewportSize);
+
+        // Center the board so its grid center is at world origin (camera target)
+        int totalW = (GridCols - 1) * GridUtils.CellStep + GridUtils.CellSize;
+        int totalH = (GridRows - 1) * GridUtils.CellStep + GridUtils.CellSize;
+        float gridCenterX = GridUtils.OffsetX + totalW / 2f;
+        float gridCenterY = GridUtils.OffsetY + totalH / 2f;
+        Position = new Vector2(-gridCenterX, -gridCenterY);
+
+        TileManager?.RefreshPositions(BoardData);
+        QueueRedraw();
     }
 
     private void OnStateChanged(int prev, int current)
@@ -105,12 +123,13 @@ public partial class Board : Node2D
 
     public override void _Draw()
     {
+        int cellSize = GridUtils.CellSize;
         for (int row = 0; row < GridRows; row++)
         {
             for (int col = 0; col < GridCols; col++)
             {
-                Vector2 pos = GridUtils.GridToWorld(row, col) - new Vector2(CellSize / 2.0f, CellSize / 2.0f);
-                var rect = new Rect2(pos, new Vector2(CellSize, CellSize));
+                Vector2 pos = GridUtils.GridToWorld(row, col) - new Vector2(cellSize / 2f, cellSize / 2f);
+                var rect = new Rect2(pos, new Vector2(cellSize, cellSize));
                 Color bgColor = (row + col) % 2 == 0 ? LightColor : DarkColor;
                 DrawRect(rect, bgColor);
                 DrawRect(rect.Grow(2.0f), new Color(1, 1, 1, 0.03f), false, 1.0f);

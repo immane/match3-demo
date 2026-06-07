@@ -1,23 +1,27 @@
-[gd_scene load_steps=2 format=3 uid="uid://title_screen"]
+[gd_scene format=3 uid="uid://b2k2qc4gfpjqd"]
 
-[ext_resource type="Script" path="res://scripts/ui/TitleScreen.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://b6ibpdlcxja7g" path="res://scripts/ui/TitleScreen.cs" id="1_script"]
 
-[node name="TitleScreen" type="Control"]
-script = ExtResource("1_script")
+[node name="TitleScreen" type="Control" unique_id=1631047738]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=466977615]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.1, 0.1, 0.18, 1)
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+color = Color(0.1, 0.1, 0.18, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=802457443]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -28,35 +32,38 @@ offset_left = -150.0
 offset_top = -200.0
 offset_right = 150.0
 offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="VBoxContainer" unique_id=495767071]
 layout_mode = 2
 text = "MATCH 3"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="VBoxContainer"]
+[node name="SubtitleLabel" type="Label" parent="VBoxContainer" unique_id=1478623606]
 layout_mode = 2
 text = "Crystal Demo"
+horizontal_alignment = 1
 
-[node name="Spacer1" type="Control" parent="VBoxContainer"]
-layout_mode = 2
+[node name="Spacer1" type="Control" parent="VBoxContainer" unique_id=865802343]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 
-[node name="StartButton" type="Button" parent="VBoxContainer"]
+[node name="StartButton" type="Button" parent="VBoxContainer" unique_id=1638660426]
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "PLAY"
-custom_minimum_size = Vector2(0, 60)
 
-[node name="Spacer2" type="Control" parent="VBoxContainer"]
-layout_mode = 2
+[node name="Spacer2" type="Control" parent="VBoxContainer" unique_id=718133597]
 custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
 
-[node name="HighScoreLabel" type="Label" parent="VBoxContainer"]
+[node name="HighScoreLabel" type="Label" parent="VBoxContainer" unique_id=1287481025]
 layout_mode = 2
 text = "BEST: 0"
 horizontal_alignment = 1
 
-[node name="VersionLabel" type="Label" parent="VBoxContainer"]
+[node name="VersionLabel" type="Label" parent="VBoxContainer" unique_id=1194750547]
 layout_mode = 2
 text = "v0.1.0"
 horizontal_alignment = 1

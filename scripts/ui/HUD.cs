@@ -105,8 +105,7 @@ public partial class HUD : CanvasLayer
 
 	private void OnPausePressed()
 	{
-		var sm = GetTree().GetFirstNodeInGroup("state_machine");
-		if (sm != null)
-			sm.Call("toggle_pause");
+		var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
+		sm?.TogglePause();
 	}
 }

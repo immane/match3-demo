@@ -44,17 +44,15 @@ public partial class PauseMenu : Control
 
     private void OnResumePressed()
     {
-        var sm = GetTree().GetFirstNodeInGroup("state_machine");
-        if (sm != null)
-            sm.Call("toggle_pause");
+        var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
+        sm?.TogglePause();
     }
 
     private void OnRestartPressed()
     {
-        var board = GetTree().GetFirstNodeInGroup("board");
+        var board = GetTree().GetFirstNodeInGroup("board") as Board;
         GameData.Instance.ResetLevel();
-        if (board != null)
-            board.Call("reset_board");
+        board?.ResetBoard();
         MouseFilter = MouseFilterEnum.Ignore;
         Hide();
     }

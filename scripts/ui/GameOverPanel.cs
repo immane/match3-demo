@@ -53,10 +53,9 @@ public partial class GameOverPanel : Control
 
     private void OnRetryPressed()
     {
-        var board = GetTree().GetFirstNodeInGroup("board");
+        var board = GetTree().GetFirstNodeInGroup("board") as Board;
         GameData.Instance.ResetLevel();
-        if (board != null)
-            board.Call("reset_board");
+        board?.ResetBoard();
         MouseFilter = MouseFilterEnum.Ignore;
         Hide();
     }

@@ -7,38 +7,23 @@
 [ext_resource type="PackedScene" path="res://assets/scenes/pause_menu.tscn" id="5_pause"]
 [ext_resource type="PackedScene" path="res://assets/scenes/game_over_panel.tscn" id="6_gameover"]
 
-[node name="Main" type="Node2D" unique_id=588812597]
+[node name="Main" type="Node2D" unique_id=139962168]
 script = ExtResource("1_main_script")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1870105501]
-position = Vector2(360, 640)
+[node name="Camera2D" type="Camera2D" parent="." unique_id=144685372]
 
-[node name="Board" parent="." unique_id=1129080415 instance=ExtResource("2_board")]
-position = Vector2(17, 71)
+[node name="Board" parent="." unique_id=620722717 instance=ExtResource("2_board")]
 
-[node name="HUD" parent="." unique_id=1839068433 instance=ExtResource("3_hud")]
+[node name="HUD" parent="." unique_id=139904962 instance=ExtResource("3_hud")]
 
-[node name="TitleScreen" parent="." unique_id=43680683 instance=ExtResource("4_title")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = 361.0
-offset_top = 640.0
-offset_right = 361.0
-offset_bottom = 640.0
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=1457864246]
 
-[node name="PauseMenu" parent="." unique_id=2024763768 instance=ExtResource("5_pause")]
-offset_left = 362.0
-offset_top = 558.0
-offset_right = 362.0
-offset_bottom = 558.0
+[node name="TitleScreen" parent="UILayer" unique_id=1302373187 instance=ExtResource("4_title")]
+
+[node name="PauseMenu" parent="UILayer" unique_id=28700419 instance=ExtResource("5_pause")]
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GameOverPanel" parent="." unique_id=227239884 instance=ExtResource("6_gameover")]
-offset_left = 360.0
-offset_top = 566.0
-offset_right = 360.0
-offset_bottom = 566.0
+[node name="GameOverPanel" parent="UILayer" unique_id=431982450 instance=ExtResource("6_gameover")]
 grow_horizontal = 2
 grow_vertical = 2

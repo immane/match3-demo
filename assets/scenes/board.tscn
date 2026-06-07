@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://board_main"]
+[gd_scene load_steps=5 format=3 uid="uid://board_main"]
 
 [ext_resource type="Script" path="res://scripts/game/Board.cs" id="1_board_script"]
 [ext_resource type="Script" path="res://scripts/game/InputHandler.cs" id="2_input"]
 [ext_resource type="Script" path="res://scripts/game/GameStateMachine.cs" id="3_state"]
+[ext_resource type="Script" path="res://scripts/game/AnimationController.cs" id="4_anim"]
 
 [node name="Board" type="Node2D"]
 script = ExtResource("1_board_script")
@@ -18,3 +19,6 @@ script = ExtResource("2_input")
 
 [node name="GameStateMachine" type="Node" parent="."]
 script = ExtResource("3_state")
+
+[node name="AnimationController" type="Node2D" parent="."]
+script = ExtResource("4_anim")
