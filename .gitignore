@@ -1,0 +1,77 @@
+# ==================================
+# Godot 4.x Match-3 Demo .gitignore
+# ==================================
+
+# ---- Godot ----
+.godot/
+*.import
+*.translation
+*.uid
+
+# ---- Build / Export ----
+export/release/
+export/debug/
+build/
+
+# ---- Web Export ----
+export/web/*.html
+export/web/*.js
+export/web/*.wasm
+export/web/*.pck
+export/web/*.png
+export/web/*.ico
+export/web/*.worker.js
+export/web/*.audio.worklet.js
+export/web/*.symbols
+export/web/*.zip
+
+# ---- Android Export ----
+export/android/build/
+export/android/.gradle/
+export/android/*.apk
+export/android/*.aab
+
+# ---- iOS Export ----
+export/ios/build/
+export/ios/*.xcworkspace
+export/ios/*.xcodeproj
+export/ios/Pods/
+export/ios/*.ipa
+
+# ---- OS Generated ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---- IDE / Editor ----
+.obsidian/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-*
+
+# ---- Config / Secrets ----
+.env
+*.env
+*.env.*
+android/*.keystore
+android/*.jks
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Custom Export Templates ----
+*.zip
+
+# To keep the export directory structure, add:
+# !export/web/.gitkeep
+# !export/android/.gitkeep
+# !export/ios/.gitkeep
