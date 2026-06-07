@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bdvankx830xk"]
 
-[ext_resource type="Script" uid="uid://b22ib2y18oyei" path="res://scripts/game/main.gd" id="1_main_script"]
+[ext_resource type="Script" uid="uid://1drvn7pe4ju0" path="res://scripts/game/Main.cs" id="1_main_script"]
 [ext_resource type="PackedScene" path="res://assets/scenes/board.tscn" id="2_board"]
 [ext_resource type="PackedScene" path="res://assets/scenes/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://assets/scenes/title_screen.tscn" id="4_title"]
@@ -14,6 +14,7 @@ script = ExtResource("1_main_script")
 position = Vector2(360, 640)
 
 [node name="Board" parent="." unique_id=1129080415 instance=ExtResource("2_board")]
+position = Vector2(17, 71)
 
 [node name="HUD" parent="." unique_id=1839068433 instance=ExtResource("3_hud")]
 

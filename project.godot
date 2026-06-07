@@ -14,7 +14,7 @@ config/name="Match3 Demo"
 config/description="A crystal-themed match-3 puzzle demo"
 config/version="0.1.0"
 run/main_scene="res://assets/scenes/main.tscn"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.6", "C#")
 
 [audio]
 
@@ -22,8 +22,8 @@ general/default_playback_type.web=0
 
 [autoload]
 
-GameData="*res://scripts/autoload/game_data.gd"
-EventBus="*res://scripts/autoload/event_bus.gd"
+GameData="*res://scripts/autoload/GameData.cs"
+EventBus="*res://scripts/autoload/EventBus.cs"
 
 [debug]
 
@@ -38,6 +38,10 @@ window/size/viewport_width=720
 window/size/viewport_height=1280
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="Match3Demo"
 
 [input_devices]
 

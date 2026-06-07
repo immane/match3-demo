@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://hud_main"]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud_script"]
-[ext_resource type="Script" path="res://scripts/ui/floating_text.gd" id="2_ft_script"]
+[ext_resource type="Script" path="res://scripts/ui/HUD.cs" id="1_hud_script"]
+[ext_resource type="Script" path="res://scripts/ui/FloatingTextSpawner.cs" id="2_ft_script"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud_script")

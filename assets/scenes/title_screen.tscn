@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://title_screen"]
 
-[ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/TitleScreen.cs" id="1_script"]
 
 [node name="TitleScreen" type="Control"]
 script = ExtResource("1_script")
