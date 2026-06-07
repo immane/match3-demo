@@ -34,9 +34,9 @@ gdscript/warnings/static_called_on_instance=0
 
 [display]
 
-window/size/viewport_width=720
-window/size/viewport_height=1280
-window/stretch/mode="viewport"
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
 [dotnet]
@@ -51,5 +51,9 @@ pointing/emulate_touch_from_mouse=true
 
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
+anti_aliasing/quality/msaa_2d=1
+anti_aliasing/quality/msaa_3d=1
+anti_aliasing/quality/screen_space_aa=2
+anti_aliasing/quality/use_taa=true
 rendering/2d/batching=true
 rendering/2d/batching_synchronous=false
