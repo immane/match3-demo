@@ -7,6 +7,7 @@
 | 方向 | 文档 |
 |------|------|
 | ← 研究 | [research/board_design.md](../research/board_design.md) — 坐标转换、边界处理 |
+| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — Tween API 和输入处理参考 |
 | ← 研究 | [research/state_machine.md](../research/state_machine.md) — Tween+await 动画驱动 |
 | ↔ 同级 | [state_machine.md](state_machine.md) — 动画驱动状态转换 |
 | ↔ 同级 | [gravity_cascade.md](gravity_cascade.md) — 下落/spawn 动画参数 |

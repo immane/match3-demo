@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://hud_main"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud_script"]
+[ext_resource type="Script" path="res://scripts/ui/floating_text.gd" id="2_ft_script"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud_script")
+
+[node name="TopPanel" type="PanelContainer" parent="."]
+anchors_preset = 2
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 80.0
+mouse_filter = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopPanel"]
+layout_mode = 2
+
+[node name="ScoreSection" type="VBoxContainer" parent="TopPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScoreLabel" type="Label" parent="TopPanel/HBoxContainer/ScoreSection"]
+layout_mode = 2
+text = "SCORE: 0"
+
+[node name="BestScoreLabel" type="Label" parent="TopPanel/HBoxContainer/ScoreSection"]
+layout_mode = 2
+text = "BEST: 0"
+
+[node name="ComboSection" type="VBoxContainer" parent="TopPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ComboLabel" type="Label" parent="TopPanel/HBoxContainer/ComboSection"]
+layout_mode = 2
+text = ""
+visible = false
+
+[node name="MovesSection" type="VBoxContainer" parent="TopPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MovesLabel" type="Label" parent="TopPanel/HBoxContainer/MovesSection"]
+layout_mode = 2
+text = "MOVES: 30"
+
+[node name="PauseButton" type="Button" parent="."]
+anchors_preset = 2
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 82.0
+offset_bottom = 132.0
+text = "II  PAUSE"
+
+[node name="FloatingTextLayer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="FloatingTextSpawner" type="Control" parent="FloatingTextLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("2_ft_script")
+mouse_filter = 2

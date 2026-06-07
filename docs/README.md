@@ -35,6 +35,7 @@ docs/
 | 7 | [random_generation.md](research/random_generation.md) | 随机策略、死局检测、Bag 系统 | [board_system](design/board_system.md) [match_system](design/match_system.md) |
 | 8 | [performance.md](research/performance.md) | WebGL 优化、Shader、对象池、WASM | [crystal_shader](design/crystal_shader.md) [board_system](design/board_system.md) |
 | 9 | [future_work.md](research/future_work.md) | 关卡系统、障碍物、存档、多平台 | (后续版本) |
+| 10 | [godot4_syntax.md](research/godot4_syntax.md) | Godot 4.x GDScript 语法 & API 速查 | 全部 Design / Task 文件 |
 
 ---
 

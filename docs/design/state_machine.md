@@ -6,6 +6,7 @@
 
 | 方向 | 文档 |
 |------|------|
+| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — Godot 4.x await/Tween API |
 | ← 研究 | [research/state_machine.md](../research/state_machine.md) — FSM 模式对比、动画驱动、await 模式 |
 | ← 研究 | [research/cascade.md](../research/cascade.md) — 级联循环状态转换流程 |
 | ↔ 同级 | [architecture.md](architecture.md) — 整体架构中的状态机角色 |

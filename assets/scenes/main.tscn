@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://bdvankx830xk"]
+
+[ext_resource type="Script" uid="uid://b22ib2y18oyei" path="res://scripts/game/main.gd" id="1_main_script"]
+[ext_resource type="PackedScene" path="res://assets/scenes/board.tscn" id="2_board"]
+[ext_resource type="PackedScene" path="res://assets/scenes/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://assets/scenes/title_screen.tscn" id="4_title"]
+[ext_resource type="PackedScene" path="res://assets/scenes/pause_menu.tscn" id="5_pause"]
+[ext_resource type="PackedScene" path="res://assets/scenes/game_over_panel.tscn" id="6_gameover"]
+
+[node name="Main" type="Node2D" unique_id=588812597]
+script = ExtResource("1_main_script")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1870105501]
+position = Vector2(360, 640)
+
+[node name="Board" parent="." unique_id=1129080415 instance=ExtResource("2_board")]
+
+[node name="HUD" parent="." unique_id=1839068433 instance=ExtResource("3_hud")]
+
+[node name="TitleScreen" parent="." unique_id=43680683 instance=ExtResource("4_title")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 361.0
+offset_top = 640.0
+offset_right = 361.0
+offset_bottom = 640.0
+
+[node name="PauseMenu" parent="." unique_id=2024763768 instance=ExtResource("5_pause")]
+offset_left = 362.0
+offset_top = 558.0
+offset_right = 362.0
+offset_bottom = 558.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameOverPanel" parent="." unique_id=227239884 instance=ExtResource("6_gameover")]
+offset_left = 360.0
+offset_top = 566.0
+offset_right = 360.0
+offset_bottom = 566.0
+grow_horizontal = 2
+grow_vertical = 2

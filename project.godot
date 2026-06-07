@@ -1,0 +1,51 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Match3 Demo"
+config/description="A crystal-themed match-3 puzzle demo"
+config/version="0.1.0"
+run/main_scene="res://assets/scenes/main.tscn"
+config/features=PackedStringArray("4.6")
+
+[audio]
+
+general/default_playback_type.web=0
+
+[autoload]
+
+GameData="*res://scripts/autoload/game_data.gd"
+EventBus="*res://scripts/autoload/event_bus.gd"
+
+[debug]
+
+gdscript/warnings/unused_variable=0
+gdscript/warnings/unused_signal=0
+gdscript/warnings/shadowed_variable=0
+gdscript/warnings/static_called_on_instance=0
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+rendering/2d/batching=true
+rendering/2d/batching_synchronous=false

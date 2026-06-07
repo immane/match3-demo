@@ -6,6 +6,7 @@
 
 | 方向 | 文档 |
 |------|------|
+| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — 类型化集合、class_name、RefCounted |
 | ← 研究 | [research/game_rules.md](../research/game_rules.md) — 水晶类型、特殊方块规则 |
 | ← 研究 | [research/board_design.md](../research/board_design.md) — 单元格数据结构参考 |
 | ↔ 同级 | [board_system.md](board_system.md) — TileData 的实际使用 |
