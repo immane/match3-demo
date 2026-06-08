@@ -45,9 +45,6 @@ public partial class Board : Node2D
 
 		RecalculateLayout();
 		GetTree().Root.SizeChanged += RecalculateLayout;
-
-		await ToSignal(GetTree(), "process_frame");
-		StateMachine.Initialize();
 	}
 
 	private void RecalculateLayout()
