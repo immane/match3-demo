@@ -13,6 +13,7 @@
 - **Solution**: `Match3Demo.sln` / `Match3Demo.csproj`
 - **Entry scene**: `res://assets/scenes/main.tscn`
 - **Viewport**: 1080×1920 (portrait 9:16), resizable, `viewport` stretch + `expand` aspect
+- **Gameplay**: 30-move limit + 30-second countdown timer
 - **Build**: `dotnet build` → 0 errors, 0 warnings
 - **Test**: 41 xUnit `[Fact]` tests in `Tests/` directory
 
@@ -24,17 +25,18 @@
 Main (Node2D) [Main.cs]
 ├── Camera2D           ← at (0,0), screen shake target
 ├── Board [Board.cs]   ← 8×8 grid drawing, input handling
-│   ├── BackgroundLayer
+│   ├── GameBg (Sprite2D) ← background image (behind checkerboard)
+│   ├── BackgroundLayer [BackgroundLayer.cs] ← checkerboard rendering
 │   ├── TileLayer      ← TileManager (created in code) lives here
 │   ├── EffectLayer
 │   ├── InputHandler   ← DISABLED (ProcessModeEnum.Disabled), board handles input directly
 │   ├── GameStateMachine [GameStateMachine.cs]
 │   └── AnimationController [AnimationController.cs]
 ├── HUD (CanvasLayer) [HUD.cs]
-│   ├── TopPanel → Score, Best, Combo, Moves labels
+│   ├── TopPanel → Score, Best, Combo, Moves, Timer labels
 │   ├── PauseButton
 │   └── FloatingTextLayer → FloatingTextSpawner
-└── UILayer (CanvasLayer)        ← NEW: all overlays on CanvasLayer for screen-space rendering
+└── UILayer (CanvasLayer)        ← all overlays on CanvasLayer for screen-space rendering
 	├── TitleScreen [TitleScreen.cs]
 	├── PauseMenu [PauseMenu.cs]
 	└── GameOverPanel [GameOverPanel.cs]
@@ -61,9 +63,9 @@ Tile (Node2D) [Tile.cs]
 
 ```
 scripts/
-├── autoload/    Global singletons (EventBus signals, GameData state)
+├── autoload/    Global singletons (EventBus signals, GameData state, AudioManager SFX)
 ├── core/        Pure logic — no Godot node dependency (static classes)
-├── game/        Scene nodes — Board, StateMachine, Tile, TileManager, AnimationController
+├── game/        Scene nodes — Board, StateMachine, Tile, TileManager, AnimationController, BackgroundLayer
 ├── ui/          UI screens — HUD, Title, Pause, GameOver, FloatingText
 ├── fx/          Effects — particles, screen shake
 └── utils/       Enums, constants, grid math
@@ -73,7 +75,7 @@ scripts/
 
 ## Signal Bus (EventBus.cs — Autoload Singleton)
 
-21 signals. Access via `EventBus.Instance.SignalName`:
+22 signals. Access via `EventBus.Instance.SignalName`:
 
 | Signal | Params | Emitted By | Listened By |
 |--------|--------|-----------|-------------|
@@ -87,13 +89,15 @@ scripts/
 | `TilesCleared` | `Array positions` | GameStateMachine | — |
 | `SpecialTileSpawned` | `Vector2I pos, int type` | GameStateMachine | — |
 | `CascadeTriggered` | `int depth` | GameStateMachine | — |
-| `ScoreChanged` | `int newScore, int delta` | GameData | HUD |
+| `ScoreChanged` | `int newScore, int delta` | GameData | HUD, AudioManager |
 | `ComboUpdated` | `int combo` | GameData | HUD |
 | `MovesChanged` | `int remaining` | GameData | HUD |
+| `TimeChanged` | `float remaining` | GameData, Main | HUD |
 | `GameStateChanged` | `int oldState, int newState` | GameStateMachine | — |
 | `GamePaused` | — | GameStateMachine | PauseMenu |
 | `GameResumed` | — | GameStateMachine | PauseMenu |
-| `GameOver` | — | GameData | Main, GameOverPanel |
+| `GameOver` | — | GameData, Main (timer expiry) | Main, GameOverPanel, AudioManager |
+| `PlayEffect` | `string effectName, Vector2 pos` | GameStateMachine, UI scripts | AudioManager |
 | `ScreenShake` | `float intensity, duration` | — | ScreenShake |
 | `ShowFloatingText` | `string text, Vector2 pos, Color` | HUD | FloatingTextSpawner |
 
@@ -114,7 +118,7 @@ IDLE(0) → tap tile → SELECTED(1) → tap adjacent → SWAPPING(2)
 																			   └─ deadlock → RESHUFFLING(10) → IDLE
 
 PAUSED(11)  ← any state → PAUSED → resume → previous state
-GAME_OVER(12)  ← GameData.UseMove() when moves ≤ 0
+GAME_OVER(12)  ← GameData.UseMove() when moves ≤ 0, or countdown timer expiry
 RESETTING(13)  ← RestartGame()
 ```
 
@@ -148,14 +152,17 @@ User click
 1. MatchDetector.DetectAll()
 2. ScoreCalculator.CalculateTotal() + ApplyCombo()
 3. GameData.AddScore() + UpdateCombo()
-4. AnimController.PlayClearAsync(positions) → shrink+fade tiles, release to pool
-5. BoardData cells cleared
-6. GravitySystem.ApplyGravity() → returns List<FallInfo>
-7. AnimController.PlayFallingAsync(falls) → bounce tiles to new positions
-8. SpawnSystem.FillEmpty() → returns List<SpawnInfo>
-9. AnimController.PlaySpawnAsync(spawns) → drop new tiles from above
-10. Repeat up to 20 times
-11. ValidMoveChecker.HasAnyValidMove() → IDLE or Reshuffle
+4. Emit PlayEffect("match"), PlayEffect("combo" if depth ≥ 2)
+5. AnimController.PlayClearAsync(positions) → shrink+fade tiles, release to pool
+6. Emit PlayEffect("clear")
+7. BoardData cells cleared
+8. GravitySystem.ApplyGravity() → returns List<FallInfo>
+9. AnimController.PlayFallingAsync(falls) → bounce tiles to new positions
+10. SpawnSystem.FillEmpty() → returns List<SpawnInfo>
+11. AnimController.PlaySpawnAsync(spawns) → drop new tiles from above
+12. Emit PlayEffect("cascade")
+13. Repeat up to 20 times
+14. ValidMoveChecker.HasAnyValidMove() → IDLE or Reshuffle
 ```
 
 ---
@@ -233,7 +240,7 @@ Godot auto-imports SVGs as `CompressedTexture2D`. Clear `.godot/imported/` to fo
 2. Calls `GridUtils.Configure(8, 8, viewportSize)`
 3. Positions Board node so grid center is at world origin (0,0)
 4. Tile positions updated via `TileManager.RefreshPositions()`
-5. Redraws checkerboard background
+5. Calls `BackgroundLayer.Redraw()` to redraw checkerboard
 
 ---
 
@@ -242,6 +249,48 @@ Godot auto-imports SVGs as `CompressedTexture2D`. Clear `.godot/imported/` to fo
 - `GameStateMachine.TogglePause()` → saves current state to `StateBeforePause`, sets `PAUSED`, calls `GetTree().Paused = true`
 - `PauseMenu.cs` has `ProcessMode = ProcessModeEnum.WhenPaused` so its buttons work during pause
 - On resume: `GetTree().Paused = false`, restores `StateBeforePause`
+- **CRITICAL**: `PauseMenu.OnQuitPressed()` MUST call `GetTree().Paused = false` before `ReloadCurrentScene()`, otherwise the new scene loads paused and buttons won't respond
+
+---
+
+## Countdown Timer
+
+- 30-second countdown, managed by `Main` via a `Timer` node (1s interval)
+- `Main.StartCountdown()` resets `GameData.TimeRemaining` to 30 and starts the timer
+- Each tick decrements `TimeRemaining` and emits `TimeChanged` signal
+- When timer reaches 0, emits `GameOver` signal
+- Timer auto-pauses with the game tree (`GetTree().Paused`)
+- Restart paths (PauseMenu, GameOverPanel) call `main?.StartCountdown()` via group lookup
+- `HUD` displays timer in TopPanel with color coding (white → orange at ≤10s → red at ≤5s)
+
+---
+
+## Audio System (AudioManager.cs — Autoload Singleton)
+
+- Object pool of 8+ `AudioStreamPlayer` nodes, auto-expands if all busy
+- 16 cute synthesized WAV sound effects in `assets/audio/`
+- Volume: `MasterVolume = -10dB` applied to all SFX
+- Listens to `PlayEffect` signal to play named sounds
+- Also listens to `GameOver` and `ScoreChanged` for automatic game-over/score sounds
+- Randomizes match sound between 3 variants (`match_0`, `match_1`, `match_2`)
+- Respects `GameData.SfxEnabled` toggle
+
+Sound mappings:
+| Effect Name | Trigger |
+|-------------|---------|
+| `tile_select` | Tile selected in IDLE state |
+| `tile_deselect` | Same tile clicked again (deselect) |
+| `swap` | Valid swap executed (match found) |
+| `swap_invalid` | Invalid swap (no match, swap back) |
+| `match` | Matches detected (random variant) |
+| `clear` | Tiles cleared/animated |
+| `cascade` | Cascade iteration triggered |
+| `combo` | Combo ≥ 2 |
+| `special_spawn` | Special tile spawned |
+| `reshuffle` | Board reshuffled (deadlock) |
+| `game_over` | Game over triggered |
+| `score_tick` | Score increased (-4dB quieter) |
+| `ui_click` | Any UI button pressed |
 
 ---
 
@@ -254,6 +303,10 @@ Godot auto-imports SVGs as `CompressedTexture2D`. Clear `.godot/imported/` to fo
 5. **Tabs vs spaces** — Godot scripts use tabs (4-space width). Mixed indentation = parse error.
 6. **Standard vs .NET Godot** — C# project MUST use Godot Mono/.NET edition
 7. **_Ready() order in C#** — Parent's `_Ready()` runs BEFORE children's (opposite of GDScript). Use `CallDeferred` if you need children ready first.
+8. **Disposed signal handlers** — Nodes that connect to EventBus MUST disconnect in `_ExitTree()`. Without cleanup, scene reloads leave dangling handlers that cause `ObjectDisposedException` when accessing freed child nodes.
+9. **Quit while paused** — `ReloadCurrentScene()` does not reset `GetTree().Paused`. Must unpause first.
+10. **Double board init** — `Board._Ready()` should NOT call `StateMachine.Initialize()`. Board is only generated when PLAY is pressed via `ResetBoard()`.
+11. **Sprite2D under Control** — Don't mix Sprite2D with Controls under CanvasLayer. Use TextureRect with full anchors instead.
 
 ---
 
@@ -273,11 +326,12 @@ Godot auto-imports SVGs as `CompressedTexture2D`. Clear `.godot/imported/` to fo
 | File | Purpose |
 |------|---------|
 | `scripts/game/Board.cs` | Grid rendering, input, layout |
+| `scripts/game/BackgroundLayer.cs` | Checkerboard background drawing |
 | `scripts/game/GameStateMachine.cs` | 14-state FSM, swap/cascade logic |
 | `scripts/game/AnimationController.cs` | Tween animation (swap/clear/fall/spawn) |
 | `scripts/game/Tile.cs` | Cat texture display, selection |
 | `scripts/game/TileManager.cs` | Object pool, refresh from data |
-| `scripts/game/Main.cs` | Root scene, UI transitions |
+| `scripts/game/Main.cs` | Root scene, UI transitions, countdown timer |
 | `scripts/core/BoardData.cs` | 8×8 grid data, CellData, swap |
 | `scripts/core/MatchDetector.cs` | Match detection (2-pass algorithm) |
 | `scripts/core/GravitySystem.cs` | Column-based gravity + FallInfo |
@@ -286,5 +340,6 @@ Godot auto-imports SVGs as `CompressedTexture2D`. Clear `.godot/imported/` to fo
 | `scripts/core/ValidMoveChecker.cs` | Deadlock detection |
 | `scripts/utils/GridUtils.cs` | Coordinate conversion, dynamic sizing |
 | `scripts/utils/Enums.cs` | GameState, CrystalType, SpecialType, MatchShape |
-| `scripts/autoload/EventBus.cs` | 21 signals, Instance singleton |
-| `scripts/autoload/GameData.cs` | Score, moves, settings singleton |
+| `scripts/autoload/EventBus.cs` | 22 signals, Instance singleton |
+| `scripts/autoload/GameData.cs` | Score, moves, timer, settings |
+| `scripts/autoload/AudioManager.cs` | SFX object pool (16 sounds) |
