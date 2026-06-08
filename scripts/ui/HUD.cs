@@ -27,10 +27,10 @@ public partial class HUD : CanvasLayer
 		EventBus.Instance.MovesChanged += OnMovesChanged;
 		_pauseButton.Pressed += OnPausePressed;
 
-		_scoreLabel.AddThemeFontSizeOverride("font_size", 22);
-		_bestScoreLabel.AddThemeFontSizeOverride("font_size", 18);
-		_comboLabel.AddThemeFontSizeOverride("font_size", 28);
-		_movesLabel.AddThemeFontSizeOverride("font_size", 22);
+		_scoreLabel.AddThemeFontSizeOverride("font_size", 26);
+		_bestScoreLabel.AddThemeFontSizeOverride("font_size", 22);
+		_comboLabel.AddThemeFontSizeOverride("font_size", 32);
+		_movesLabel.AddThemeFontSizeOverride("font_size", 26);
 
 		_scoreLabel.AddThemeColorOverride("font_color", new Color("ffd700"));
 		_bestScoreLabel.AddThemeColorOverride("font_color", new Color("aaaaaa"));
@@ -108,5 +108,12 @@ public partial class HUD : CanvasLayer
 		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
 		sm?.TogglePause();
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Instance.ScoreChanged -= OnScoreChanged;
+		EventBus.Instance.ComboUpdated -= OnComboUpdated;
+		EventBus.Instance.MovesChanged -= OnMovesChanged;
 	}
 }

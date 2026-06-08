@@ -22,8 +22,12 @@ public partial class PauseMenu : Control
 		EventBus.Instance.GamePaused += OnGamePaused;
 		EventBus.Instance.GameResumed += OnGameResumed;
 
-		_pauseLabel.AddThemeFontSizeOverride("font_size", 48);
+		_pauseLabel.AddThemeFontSizeOverride("font_size", 56);
 		_pauseLabel.AddThemeColorOverride("font_color", new Color("ffd700"));
+
+		_resumeButton.AddThemeFontSizeOverride("font_size", 24);
+		_restartButton.AddThemeFontSizeOverride("font_size", 24);
+		_quitButton.AddThemeFontSizeOverride("font_size", 24);
 
 		_resumeButton.Pressed += OnResumePressed;
 		_restartButton.Pressed += OnRestartPressed;
@@ -62,6 +66,13 @@ public partial class PauseMenu : Control
 	private void OnQuitPressed()
 	{
 		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
+		GetTree().Paused = false;
 		GetTree().ReloadCurrentScene();
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Instance.GamePaused -= OnGamePaused;
+		EventBus.Instance.GameResumed -= OnGameResumed;
 	}
 }

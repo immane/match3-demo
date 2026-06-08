@@ -24,10 +24,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -140.0
-offset_top = -150.0
-offset_right = 140.0
-offset_bottom = 150.0
+offset_left = -220.0
+offset_top = -180.0
+offset_right = 220.0
+offset_bottom = 180.0
 
 [node name="GameOverLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
@@ -61,4 +61,4 @@ custom_minimum_size = Vector2(0, 20)
 [node name="RetryButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "TRY AGAIN"
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 64)

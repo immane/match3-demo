@@ -118,4 +118,11 @@ public partial class Board : Node2D
 		else
 			StateMachine.ClearSelection();
 	}
+
+	public override void _ExitTree()
+	{
+		GetTree().Root.SizeChanged -= RecalculateLayout;
+		if (StateMachine != null)
+			StateMachine.StateChanged -= OnStateChanged;
+	}
 }

@@ -22,18 +22,19 @@ public partial class GameOverPanel : Control
 
         EventBus.Instance.GameOver += OnGameOver;
 
-        _gameOverLabel.AddThemeFontSizeOverride("font_size", 48);
+        _gameOverLabel.AddThemeFontSizeOverride("font_size", 56);
         _gameOverLabel.AddThemeColorOverride("font_color", new Color("ff4444"));
 
-        _finalScoreLabel.AddThemeFontSizeOverride("font_size", 32);
+        _finalScoreLabel.AddThemeFontSizeOverride("font_size", 36);
         _finalScoreLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
 
-        _bestScoreLabel.AddThemeFontSizeOverride("font_size", 24);
+        _bestScoreLabel.AddThemeFontSizeOverride("font_size", 28);
         _bestScoreLabel.AddThemeColorOverride("font_color", new Color(1, 0.843137f, 0));
 
-        _newRecordLabel.AddThemeFontSizeOverride("font_size", 28);
+        _newRecordLabel.AddThemeFontSizeOverride("font_size", 32);
         _newRecordLabel.AddThemeColorOverride("font_color", new Color(1, 0.843137f, 0));
 
+        _retryButton.AddThemeFontSizeOverride("font_size", 24);
         _retryButton.Pressed += OnRetryPressed;
     }
 
@@ -59,5 +60,10 @@ public partial class GameOverPanel : Control
 		board?.ResetBoard();
 		MouseFilter = MouseFilterEnum.Ignore;
 		Hide();
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Instance.GameOver -= OnGameOver;
 	}
 }

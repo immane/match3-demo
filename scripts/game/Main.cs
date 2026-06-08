@@ -52,4 +52,9 @@ public partial class Main : Node2D
         _board.SetInteractionEnabled(false);
         _gameOverPanel.Show();
     }
+
+    public override void _ExitTree()
+    {
+        EventBus.Instance.GameOver -= OnGameOver;
+    }
 }
