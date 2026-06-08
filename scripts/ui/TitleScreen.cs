@@ -44,6 +44,7 @@ public partial class TitleScreen : Control
 
 	private void OnStartPressed()
 	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		MouseFilter = MouseFilterEnum.Ignore;
 		Hide();
 		EmitSignal(SignalName.GameStarted);

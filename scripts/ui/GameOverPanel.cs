@@ -51,12 +51,13 @@ public partial class GameOverPanel : Control
         Show();
     }
 
-    private void OnRetryPressed()
-    {
-        var board = GetTree().GetFirstNodeInGroup("board") as Board;
-        GameData.Instance.ResetLevel();
-        board?.ResetBoard();
-        MouseFilter = MouseFilterEnum.Ignore;
-        Hide();
-    }
+	private void OnRetryPressed()
+	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
+		var board = GetTree().GetFirstNodeInGroup("board") as Board;
+		GameData.Instance.ResetLevel();
+		board?.ResetBoard();
+		MouseFilter = MouseFilterEnum.Ignore;
+		Hide();
+	}
 }

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b2k2qc4gfpjqd"]
 
 [ext_resource type="Script" uid="uid://b6ibpdlcxja7g" path="res://scripts/ui/TitleScreen.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://6t6lvydu6a0v" path="res://assets/images/bg.jpg" id="2_tlwn0"]
 
 [node name="TitleScreen" type="Control" unique_id=1631047738]
 layout_mode = 3
@@ -20,6 +21,11 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.1, 0.1, 0.18, 1)
+
+[node name="Bg" type="Sprite2D" parent="." unique_id=1126778254]
+position = Vector2(538.00006, 962.00006)
+scale = Vector2(0.7552083, 0.7552083)
+texture = ExtResource("2_tlwn0")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=802457443]
 layout_mode = 1

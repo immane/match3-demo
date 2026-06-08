@@ -24,6 +24,7 @@ general/default_playback_type.web=0
 
 GameData="*res://scripts/autoload/GameData.cs"
 EventBus="*res://scripts/autoload/EventBus.cs"
+AudioManager="*res://scripts/autoload/AudioManager.cs"
 
 [debug]
 

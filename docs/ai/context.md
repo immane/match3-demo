@@ -35,9 +35,9 @@ Main (Node2D) [Main.cs]
 │   ├── PauseButton
 │   └── FloatingTextLayer → FloatingTextSpawner
 └── UILayer (CanvasLayer)        ← NEW: all overlays on CanvasLayer for screen-space rendering
-    ├── TitleScreen [TitleScreen.cs]
-    ├── PauseMenu [PauseMenu.cs]
-    └── GameOverPanel [GameOverPanel.cs]
+	├── TitleScreen [TitleScreen.cs]
+	├── PauseMenu [PauseMenu.cs]
+	└── GameOverPanel [GameOverPanel.cs]
 ```
 
 **CRITICAL**: UI overlays MUST be under a `CanvasLayer` node. Controls under `Node2D` render in world-space (affected by camera), not screen-space. The `UILayer` CanvasLayer was added specifically to fix this.
@@ -103,15 +103,15 @@ scripts/
 
 ```
 IDLE(0) → tap tile → SELECTED(1) → tap adjacent → SWAPPING(2)
-                                                    ├─ no match → SWAP_BACK(3) → IDLE
-                                                    └─ match → CHECKING_MATCHES(4)
-                                                               → CLEARING(5)
-                                                               → FALLING(6)
-                                                               → SPAWNING(7)
-                                                               → CASCADE_CHECK(8)
-                                                               → loop back or → CHECK_VALID(9)
-                                                                               ├─ valid → IDLE
-                                                                               └─ deadlock → RESHUFFLING(10) → IDLE
+													├─ no match → SWAP_BACK(3) → IDLE
+													└─ match → CHECKING_MATCHES(4)
+															   → CLEARING(5)
+															   → FALLING(6)
+															   → SPAWNING(7)
+															   → CASCADE_CHECK(8)
+															   → loop back or → CHECK_VALID(9)
+																			   ├─ valid → IDLE
+																			   └─ deadlock → RESHUFFLING(10) → IDLE
 
 PAUSED(11)  ← any state → PAUSED → resume → previous state
 GAME_OVER(12)  ← GameData.UseMove() when moves ≤ 0
@@ -132,15 +132,15 @@ User click
   → Board._Input() [get_local_mouse_position, GridUtils.WorldToGrid]
   → TileManager.GetActiveTile(index)
   → GameStateMachine.OnTileClicked(tile)
-    → IDLE: tile.Select(), state→SELECTED
-    → SELECTED: check adjacency (|dx|+|dy|==1)
-      → ExecuteSwap():
-        1. AnimController.PlaySwapAsync(tileA, tileB)
-        2. BoardData.Swap()
-        3. TileManager.RefreshFromData()
-        4. MatchDetector.DetectAll()
-        → match → RunCascadeLoop()
-        → no match → ExecuteSwapBack()
+	→ IDLE: tile.Select(), state→SELECTED
+	→ SELECTED: check adjacency (|dx|+|dy|==1)
+	  → ExecuteSwap():
+		1. AnimController.PlaySwapAsync(tileA, tileB)
+		2. BoardData.Swap()
+		3. TileManager.RefreshFromData()
+		4. MatchDetector.DetectAll()
+		→ match → RunCascadeLoop()
+		→ no match → ExecuteSwapBack()
 ```
 
 ### Cascade Loop (per iteration)

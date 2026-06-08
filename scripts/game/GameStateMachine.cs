@@ -133,6 +133,7 @@ public partial class GameStateMachine : Node
 	private void Reshuffle()
 	{
 		CurrentState = (int)GameState.RESHUFFLING;
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "reshuffle", Vector2.Zero);
 
 		var types = new Godot.Collections.Array<int>();
 		for (int i = 0; i < BoardData.Cols * BoardData.Rows; i++)
@@ -186,6 +187,7 @@ public partial class GameStateMachine : Node
 				SelectedTile = tile;
 				tile.Select();
 				EventBus.Instance.EmitSignal(EventBus.SignalName.TileSelected, tile, tile.BoardPosition);
+				EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "tile_select", Vector2.Zero);
 				CurrentState = (int)GameState.SELECTED;
 				break;
 
@@ -195,6 +197,7 @@ public partial class GameStateMachine : Node
 					SelectedTile.Deselect();
 					SelectedTile = null;
 					EventBus.Instance.EmitSignal(EventBus.SignalName.TileDeselected);
+					EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "tile_deselect", Vector2.Zero);
 					CurrentState = (int)GameState.IDLE;
 					return;
 				}
@@ -260,6 +263,7 @@ public partial class GameStateMachine : Node
 		{
 			GameData.Instance.UseMove();
 			EventBus.Instance.EmitSignal(EventBus.SignalName.SwapCompleted, true);
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "swap", Vector2.Zero);
 			CurrentState = (int)GameState.CHECKING_MATCHES;
 			CascadeDepth = 0;
 			await RunCascadeLoop();
@@ -289,6 +293,7 @@ public partial class GameStateMachine : Node
 			return;
 
 		EventBus.Instance.EmitSignal(EventBus.SignalName.SwapInvalid);
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "swap_invalid", Vector2.Zero);
 		CurrentState = (int)GameState.IDLE;
 	}
 
@@ -313,6 +318,10 @@ public partial class GameStateMachine : Node
 			GameData.Instance.AddScore(score);
 			GameData.Instance.UpdateCombo(CascadeDepth);
 
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "match", Vector2.Zero);
+			if (CascadeDepth >= 2)
+				EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "combo", Vector2.Zero);
+
 			CurrentState = (int)GameState.CLEARING;
 			ProcessMatchResult(result);
 			EventBus.Instance.EmitSignal(EventBus.SignalName.MatchesFound, new Godot.Collections.Array());
@@ -326,6 +335,8 @@ public partial class GameStateMachine : Node
 
 			if (!IsInsideTree())
 				return;
+
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "clear", Vector2.Zero);
 
 			foreach (var g in result.Groups)
 				foreach (var pos in g.Positions)
@@ -358,6 +369,7 @@ public partial class GameStateMachine : Node
 
 			CurrentState = (int)GameState.CASCADE_CHECK;
 			EventBus.Instance.EmitSignal(EventBus.SignalName.CascadeTriggered, CascadeDepth);
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "cascade", Vector2.Zero);
 		}
 
 		CurrentState = (int)GameState.CHECK_VALID;
@@ -373,6 +385,7 @@ public partial class GameStateMachine : Node
 			{
 				tile.SpecialType = spawn.SpecialType;
 				EventBus.Instance.EmitSignal(EventBus.SignalName.SpecialTileSpawned, spawn.Position, spawn.SpecialType);
+				EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "special_spawn", Vector2.Zero);
 			}
 		}
 	}

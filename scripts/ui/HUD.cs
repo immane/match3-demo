@@ -105,6 +105,7 @@ public partial class HUD : CanvasLayer
 
 	private void OnPausePressed()
 	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
 		sm?.TogglePause();
 	}

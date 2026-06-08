@@ -44,12 +44,14 @@ public partial class PauseMenu : Control
 
 	private void OnResumePressed()
 	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
 		sm?.TogglePause();
 	}
 
 	private void OnRestartPressed()
 	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		var board = GetTree().GetFirstNodeInGroup("board") as Board;
 		GameData.Instance.ResetLevel();
 		board?.ResetBoard();
@@ -59,6 +61,7 @@ public partial class PauseMenu : Control
 
 	private void OnQuitPressed()
 	{
+		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		GetTree().ReloadCurrentScene();
 	}
 }

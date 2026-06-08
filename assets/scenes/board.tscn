@@ -1,24 +1,32 @@
-[gd_scene load_steps=5 format=3 uid="uid://board_main"]
+[gd_scene format=3 uid="uid://clutfc1wrd035"]
 
-[ext_resource type="Script" path="res://scripts/game/Board.cs" id="1_board_script"]
-[ext_resource type="Script" path="res://scripts/game/InputHandler.cs" id="2_input"]
-[ext_resource type="Script" path="res://scripts/game/GameStateMachine.cs" id="3_state"]
-[ext_resource type="Script" path="res://scripts/game/AnimationController.cs" id="4_anim"]
+[ext_resource type="Script" uid="uid://d2sfqiaw0458o" path="res://scripts/game/Board.cs" id="1_board_script"]
+[ext_resource type="Texture2D" uid="uid://b6e2gwq8f48sm" path="res://assets/images/game_bg.jpg" id="2_bli1e"]
+[ext_resource type="Script" uid="uid://b3cq2r3lbg8g4" path="res://scripts/game/BackgroundLayer.cs" id="2_bglayer"]
+[ext_resource type="Script" uid="uid://ysk0p0c24qe8" path="res://scripts/game/InputHandler.cs" id="2_input"]
+[ext_resource type="Script" uid="uid://dkysv1nejsg04" path="res://scripts/game/GameStateMachine.cs" id="3_state"]
+[ext_resource type="Script" uid="uid://c4ccni7w6iv2a" path="res://scripts/game/AnimationController.cs" id="4_anim"]
 
-[node name="Board" type="Node2D"]
+[node name="Board" type="Node2D" unique_id=627221471]
 script = ExtResource("1_board_script")
 
-[node name="BackgroundLayer" type="Node2D" parent="."]
+[node name="GameBg" type="Sprite2D" parent="." unique_id=55991069]
+position = Vector2(563, 957.3333)
+scale = Vector2(0.7682292, 0.7682291)
+texture = ExtResource("2_bli1e")
 
-[node name="TileLayer" type="Node2D" parent="."]
+[node name="BackgroundLayer" type="Node2D" parent="." unique_id=1868118725]
+script = ExtResource("2_bglayer")
 
-[node name="EffectLayer" type="Node2D" parent="."]
+[node name="TileLayer" type="Node2D" parent="." unique_id=909092609]
 
-[node name="InputHandler" type="Node" parent="."]
+[node name="EffectLayer" type="Node2D" parent="." unique_id=696701351]
+
+[node name="InputHandler" type="Node" parent="." unique_id=980984120]
 script = ExtResource("2_input")
 
-[node name="GameStateMachine" type="Node" parent="."]
+[node name="GameStateMachine" type="Node" parent="." unique_id=882992903]
 script = ExtResource("3_state")
 
-[node name="AnimationController" type="Node2D" parent="."]
+[node name="AnimationController" type="Node2D" parent="." unique_id=217469052]
 script = ExtResource("4_anim")
