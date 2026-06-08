@@ -1,6 +1,6 @@
 # 🐱 Match-3 Cat Puzzle
 
-> A crystal-themed match-3 puzzle game with kawaii cat tiles, built with Godot 4.6 .NET + C#
+> A kawaii cat-themed match-3 puzzle game with sound effects, countdown timer, and cascading combos — built with Godot 4.6 .NET + C#
 
 <p align="center">
   <img src="https://img.shields.io/badge/Godot-4.6-blue?logo=godot-engine" alt="Godot 4.6">
@@ -9,17 +9,24 @@
   <img src="https://img.shields.io/badge/license-MIT-orange" alt="MIT">
 </p>
 
+<p align="center">
+  <img src="docs/images/preview-0.10-1.jpg" width="45%" alt="Title Screen">
+  <img src="docs/images/preview-0.10-2.jpg" width="45%" alt="Gameplay">
+</p>
+
 ---
 
 ## ✨ Features
 
-- **8×8 grid** with 5 colorful cat types (Red, Blue, Green, Yellow, Purple)
+- **8×8 grid** with 5 colorful kawaii cat types (Red, Blue, Green, Yellow, Purple)
 - **Click-to-swap** input — tap one tile, then an adjacent one to swap
 - **Match-3 detection** with horizontal, vertical, L-shape, T-shape, and Cross patterns
 - **Cascading combos** — cleared tiles cause gravity, new tiles spawn, triggering chain reactions
 - **Special tiles** — Bomb (4-match), Rainbow (5-match), Cross (L/T shape)
-- **Scoring system** with combo multipliers
-- **Animated everything** — swap sliding, clear shrinking, fall bouncing, spawn dropping
+- **Countdown timer** — 30-second time limit, auto game-over when time runs out
+- **Cute sound effects** — 16 unique sounds for select, swap, match, clear, cascade, combo, etc.
+- **Scoring system** with combo multipliers and floating score popups
+- **Animated everything** — swap sliding, clear shrinking, fall bouncing, spawn dropping, screen shake
 - **Dynamic board scaling** — automatically fits any window size
 - **Pause / Resume** with pause menu
 - **Game-over panel** with score display and retry
@@ -34,7 +41,7 @@
 3. **Click an adjacent cat** (up/down/left/right) to swap
 4. If the swap makes 3+ in a row → they clear, score up!
 5. Tiles fall down, new cats appear → cascade!
-6. **30 moves** total. Get the highest score!
+6. Beat the **30-second countdown** and get the highest score!
 
 ---
 
@@ -43,8 +50,9 @@
 ```
 scripts/
 ├── autoload/          # Global singletons
-│   ├── EventBus.cs    # Signal bus (19 signals)
-│   └── GameData.cs    # Score, moves, settings
+│   ├── EventBus.cs    # Signal bus (22 signals)
+│   ├── GameData.cs    # Score, moves, timer, settings
+│   └── AudioManager.cs # SFX object pool (16 sounds)
 ├── core/              # Pure logic (no engine dependency)
 │   ├── BoardData.cs   # 8×8 grid + CellData
 │   ├── MatchDetector.cs   # Horizontal/vertical/flood-fill
@@ -55,15 +63,15 @@ scripts/
 │   └── ValidMoveChecker.cs # Deadlock detection
 ├── game/              # Scene nodes
 │   ├── Board.cs           # Grid rendering + input
+│   ├── BackgroundLayer.cs # Checkerboard background
 │   ├── GameStateMachine.cs # 14-state FSM
 │   ├── Tile.cs            # Cat texture display
 │   ├── TileManager.cs     # Object pool
 │   ├── AnimationController.cs # Tween animations
-│   ├── Main.cs            # Root scene controller
-│   └── InputHandler.cs    # (deprecated, board handles input)
+│   └── Main.cs            # Root scene + countdown timer
 ├── ui/                # UI screens
 │   ├── TitleScreen.cs
-│   ├── HUD.cs             # Score, moves, combo
+│   ├── HUD.cs             # Score, moves, combo, timer
 │   ├── PauseMenu.cs
 │   ├── GameOverPanel.cs
 │   └── FloatingTextSpawner.cs
@@ -71,7 +79,7 @@ scripts/
 │   ├── ParticleController.cs
 │   └── ScreenShake.cs
 └── utils/
-    ├── Enums.cs       # GameState, SpecialType, MatchShape...
+    ├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
     ├── Constants.cs   # Grid size, animation durations
     └── GridUtils.cs   # Coordinate conversion + dynamic layout
 ```
@@ -80,7 +88,7 @@ scripts/
 
 ## 🧪 Tests
 
-10 xUnit test files covering core logic:
+10 xUnit test files (41 tests) covering core logic:
 
 | File | Tests |
 |------|-------|
@@ -125,7 +133,9 @@ dotnet test
 
 ## 🎨 Asset Credits
 
-Cat SVGs are custom-designed vector graphics located in `assets/textures/cats/`.
+- **Cat SVGs** — custom-designed vector graphics in `assets/textures/cats/`
+- **Sound effects** — procedural cute synth sounds in `assets/audio/`
+- **Background images** — `assets/images/`
 
 ---
 

@@ -1,12 +1,17 @@
 # 🐱 猫咪三消
 
-> 基于 Godot 4.6 .NET + C# 开发的可爱猫咪主题三消益智游戏
+> 基于 Godot 4.6 .NET + C# 开发的可爱猫咪主题三消益智游戏，支持音效、倒计时和连锁消除
 
 <p align="center">
   <img src="https://img.shields.io/badge/Godot-4.6-blue?logo=godot-engine" alt="Godot 4.6">
   <img src="https://img.shields.io/badge/.NET-8.0-purple?logo=dotnet" alt=".NET 8">
   <img src="https://img.shields.io/badge/language-C%23-green?logo=csharp" alt="C#">
   <img src="https://img.shields.io/badge/license-MIT-orange" alt="MIT">
+</p>
+
+<p align="center">
+  <img src="docs/images/preview-0.10-1.jpg" width="45%" alt="标题画面">
+  <img src="docs/images/preview-0.10-2.jpg" width="45%" alt="游戏界面">
 </p>
 
 ---
@@ -18,8 +23,10 @@
 - **三消检测** — 支持横向、纵向、L 形、T 形、十字形匹配
 - **级联连击** — 消除后下落补新，新匹配触发连锁反应
 - **特殊方块** — 炸弹（4连）、彩虹（5连）、十字（L/T形）
-- **计分系统** — 连击倍率累加
-- **全动画** — 交换滑动、消除缩小淡出、掉落弹跳、生成坠入
+- **倒计时** — 30 秒时间限制，归零自动结算
+- **可爱音效** — 选中、交换、消除、连击等 16 种独立音效
+- **计分系统** — 连击倍率累加，浮动分数弹出
+- **全动画** — 交换滑动、消除缩小淡出、掉落弹跳、生成坠入、屏幕震动
 - **动态棋盘缩放** — 自动适配任意窗口大小
 - **暂停/继续** — 带暂停菜单
 - **游戏结束面板** — 显示分数、支持重来
@@ -34,7 +41,7 @@
 3. **再点相邻的猫**（上下左右）交换
 4. 交换后能凑 3 个同色 → 消除得分！
 5. 上方掉落补位 → 新猫生成 → 连锁消除！
-6. 总共 **30 步**，争取最高分！
+6. 在 **30 秒倒计时**内争取最高分！
 
 ---
 
@@ -43,8 +50,9 @@
 ```
 scripts/
 ├── autoload/          # 全局单例
-│   ├── EventBus.cs    # 信号总线（19 个信号）
-│   └── GameData.cs    # 分数、步数、设置
+│   ├── EventBus.cs    # 信号总线（22 个信号）
+│   ├── GameData.cs    # 分数、步数、计时、设置
+│   └── AudioManager.cs # 音效对象池（16 种音效）
 ├── core/              # 纯逻辑（无引擎依赖）
 │   ├── BoardData.cs   # 8×8 棋盘 + CellData
 │   ├── MatchDetector.cs   # 横/纵/洪水填充检测
@@ -55,15 +63,15 @@ scripts/
 │   └── ValidMoveChecker.cs # 死局检测
 ├── game/              # 场景节点
 │   ├── Board.cs           # 网格绘制 + 输入处理
+│   ├── BackgroundLayer.cs # 棋盘格背景
 │   ├── GameStateMachine.cs # 14 状态状态机
 │   ├── Tile.cs            # 猫咪贴图显示
 │   ├── TileManager.cs     # 对象池管理
 │   ├── AnimationController.cs # Tween 动画
-│   ├── Main.cs            # 主场景控制器
-│   └── InputHandler.cs    # （已废弃，Board 直接处理输入）
+│   └── Main.cs            # 主场景 + 倒计时
 ├── ui/                # UI 画面
 │   ├── TitleScreen.cs
-│   ├── HUD.cs             # 分数、步数、连击
+│   ├── HUD.cs             # 分数、步数、连击、计时
 │   ├── PauseMenu.cs
 │   ├── GameOverPanel.cs
 │   └── FloatingTextSpawner.cs
@@ -71,7 +79,7 @@ scripts/
 │   ├── ParticleController.cs
 │   └── ScreenShake.cs
 └── utils/
-    ├── Enums.cs       # GameState, SpecialType, MatchShape...
+    ├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
     ├── Constants.cs   # 网格尺寸、动画时长
     └── GridUtils.cs   # 坐标转换 + 动态布局
 ```
@@ -80,7 +88,7 @@ scripts/
 
 ## 🧪 测试
 
-10 个 xUnit 测试文件覆盖核心逻辑：
+10 个 xUnit 测试文件（41 项测试）覆盖核心逻辑：
 
 | 文件 | 测试内容 |
 |------|---------|
@@ -125,7 +133,9 @@ dotnet test
 
 ## 🎨 素材说明
 
-猫咪 SVG 为自定义矢量图形，位于 `assets/textures/cats/` 目录。
+- **猫咪 SVG** — 自定义矢量图形，位于 `assets/textures/cats/`
+- **音效** — 程序化可爱合成音效，位于 `assets/audio/`
+- **背景图片** — `assets/images/`
 
 ---
 
