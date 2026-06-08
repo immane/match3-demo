@@ -6,8 +6,8 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/gravity.md](../research/gravity.md) — 下落算法、动画时序 |
-| ← 研究 | [research/cascade.md](../research/cascade.md) — 级联循环、连击倍率 |
+| ← 研究 | [research/04_gravity.md](../research/04_gravity.md) — 下落算法、动画时序 |
+| ← 研究 | [research/05_cascade.md](../research/05_cascade.md) — 级联循环、连击倍率 |
 | ↔ 同级 | [match_system.md](match_system.md) — 匹配检测触发下落 |
 | ↔ 同级 | [state_machine.md](state_machine.md) — 级联循环在状态机中的位置 |
 | ↔ 同级 | [input_animation.md](input_animation.md) — 下落/spawn 动画实现 |

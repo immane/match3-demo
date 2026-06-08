@@ -6,9 +6,9 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — Godot 4.x await/Tween API |
-| ← 研究 | [research/state_machine.md](../research/state_machine.md) — FSM 模式对比、动画驱动、await 模式 |
-| ← 研究 | [research/cascade.md](../research/cascade.md) — 级联循环状态转换流程 |
+| ← 研究 | [research/10_godot4_syntax.md](../research/10_godot4_syntax.md) — Godot 4.x await/Tween API |
+| ← 研究 | [research/06_state_machine.md](../research/06_state_machine.md) — FSM 模式对比、动画驱动、await 模式 |
+| ← 研究 | [research/05_cascade.md](../research/05_cascade.md) — 级联循环状态转换流程 |
 | ↔ 同级 | [architecture.md](architecture.md) — 整体架构中的状态机角色 |
 | ↔ 同级 | [gravity_cascade.md](gravity_cascade.md) — 级联循环状态转换细节 |
 | ↔ 同级 | [input_animation.md](input_animation.md) — 动画驱动转换实现 |

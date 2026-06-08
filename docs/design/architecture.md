@@ -6,9 +6,9 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — Godot 4.x API 速查 |
-| ← 研究 | [research/state_machine.md](../research/state_machine.md) — 状态机理论基础 |
-| ← 研究 | [research/cascade.md](../research/cascade.md) — 级联循环和信号流参考 |
+| ← 研究 | [research/10_godot4_syntax.md](../research/10_godot4_syntax.md) — Godot 4.x API 速查 |
+| ← 研究 | [research/06_state_machine.md](../research/06_state_machine.md) — 状态机理论基础 |
+| ← 研究 | [research/05_cascade.md](../research/05_cascade.md) — 级联循环和信号流参考 |
 | ↔ 同级 | [data_models.md](data_models.md) — 核心数据结构 |
 | ↔ 同级 | [state_machine.md](state_machine.md) — 状态机详细设计 |
 | → 任务 | [Task 01](../task/01_project_setup.md) — 项目初始化 |

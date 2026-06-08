@@ -5,7 +5,7 @@
 | 方向 | 文档 |
 |------|------|
 | ↖ 设计 | [design/architecture.md](../design/architecture.md) — 项目架构、文件结构 |
-| ↖ 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — Godot 4.x 语法参考 |
+| ↖ 研究 | [research/10_godot4_syntax.md](../research/10_godot4_syntax.md) — Godot 4.x 语法参考 |
 
 ## 状态
 - [ ] 待执行

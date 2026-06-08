@@ -6,9 +6,9 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/godot4_syntax.md](../research/godot4_syntax.md) — 类型化集合、class_name、RefCounted |
-| ← 研究 | [research/game_rules.md](../research/game_rules.md) — 水晶类型、特殊方块规则 |
-| ← 研究 | [research/board_design.md](../research/board_design.md) — 单元格数据结构参考 |
+| ← 研究 | [research/10_godot4_syntax.md](../research/10_godot4_syntax.md) — 类型化集合、class_name、RefCounted |
+| ← 研究 | [research/01_game_rules.md](../research/01_game_rules.md) — 水晶类型、特殊方块规则 |
+| ← 研究 | [research/02_board_design.md](../research/02_board_design.md) — 单元格数据结构参考 |
 | ↔ 同级 | [board_system.md](board_system.md) — TileData 的实际使用 |
 | ↔ 同级 | [match_system.md](match_system.md) — MatchResult 的实际使用 |
 | → 任务 | [Task 02](../task/02_core_data.md) — 实现 enums/constants/TileData/BoardData |

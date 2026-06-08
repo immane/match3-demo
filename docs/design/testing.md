@@ -7,8 +7,8 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/future_work.md](../research/future_work.md) §14.5 — CI/CD 与测试策略 |
-| ← 研究 | [research/match_algorithm.md](../research/match_algorithm.md) §12.3 — 数据与表现分离原则 |
+| ← 研究 | [research/09_future_work.md](../research/09_future_work.md) §14.5 — CI/CD 与测试策略 |
+| ← 研究 | [research/03_match_algorithm.md](../research/03_match_algorithm.md) §12.3 — 数据与表现分离原则 |
 | ↔ 同级 | [architecture.md](architecture.md) §5 — 模型-视图分离, 可单独测试 |
 | ↔ 同级 | [data_models.md](data_models.md) — 被测数据结构 |
 | ↔ 同级 | [match_system.md](match_system.md) — 被测匹配算法 |

@@ -6,7 +6,7 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/performance.md](../research/performance.md) — WebGL Shader 优化、精度、移动端降级 |
+| ← 研究 | [research/08_performance.md](../research/08_performance.md) — WebGL Shader 优化、精度、移动端降级 |
 | ↔ 同级 | [board_system.md](board_system.md) — Tile 节点的 ShaderMaterial 配置 |
 | → 任务 | [Task 05](../task/05_crystal_shaders.md) — 3 个 .gdshader 文件实现 |
 | → 任务 | [Task 06](../task/06_tile_and_pool.md) — Tile 集成 shader |

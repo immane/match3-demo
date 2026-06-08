@@ -6,8 +6,8 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/match_algorithm.md](../research/match_algorithm.md) — 线性扫描、Flood-Fill、Bitboard 对比 |
-| ← 研究 | [research/random_generation.md](../research/random_generation.md) — 死局检测算法 |
+| ← 研究 | [research/03_match_algorithm.md](../research/03_match_algorithm.md) — 线性扫描、Flood-Fill、Bitboard 对比 |
+| ← 研究 | [research/07_random_generation.md](../research/07_random_generation.md) — 死局检测算法 |
 | ↔ 同级 | [data_models.md](data_models.md) — MatchResult、MatchGroup 数据结构 |
 | ↔ 同级 | [gravity_cascade.md](gravity_cascade.md) — 匹配结果驱动级联循环 |
 | → 任务 | [Task 03](../task/03_match_detector.md) — MatchDetector + ValidMoveChecker 实现 |
@@ -29,7 +29,7 @@
 
 ## 1. 算法概述
 
-采用**两阶段混合法**（来自 research/match_algorithm.md §6.4）：
+采用**两阶段混合法**（来自 research/03_match_algorithm.md §6.4）：
 
 ```
 输入: BoardData

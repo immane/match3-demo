@@ -6,9 +6,9 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/board_design.md](../research/board_design.md) — 尺寸对比、网格表示、坐标系统 |
-| ← 研究 | [research/random_generation.md](../research/random_generation.md) — 初始棋盘生成策略 |
-| ← 研究 | [research/performance.md](../research/performance.md) — 对象池性能优化 |
+| ← 研究 | [research/02_board_design.md](../research/02_board_design.md) — 尺寸对比、网格表示、坐标系统 |
+| ← 研究 | [research/07_random_generation.md](../research/07_random_generation.md) — 初始棋盘生成策略 |
+| ← 研究 | [research/08_performance.md](../research/08_performance.md) — 对象池性能优化 |
 | ↔ 同级 | [data_models.md](data_models.md) — BoardData + TileData 定义 |
 | ↔ 同级 | [crystal_shader.md](crystal_shader.md) — Tile 节点使用的 shader |
 | → 任务 | [Task 06](../task/06_tile_and_pool.md) — Tile + TileManager 实现 |

@@ -6,7 +6,7 @@
 
 | 方向 | 文档 |
 |------|------|
-| ← 研究 | [research/game_rules.md](../research/game_rules.md) — 计分系统、连锁倍率模型 |
+| ← 研究 | [research/01_game_rules.md](../research/01_game_rules.md) — 计分系统、连锁倍率模型 |
 | ↔ 同级 | [match_system.md](match_system.md) — ScoreCalculator 分数公式 |
 | ↔ 同级 | [state_machine.md](state_machine.md) — 分数/连击/步数事件流 |
 | → 任务 | [Task 11](../task/11_ui_hud.md) — HUD 场景 + 脚本实现 |
