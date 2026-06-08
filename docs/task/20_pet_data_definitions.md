@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/pet_system.md](../design/pet_system.md) §3 — PetDefinition, PetAbilityDef, EvolutionStep, RarityDef Resource 定义 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - 无 (纯 Resource 定义，不依赖其他模块)

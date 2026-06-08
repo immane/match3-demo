@@ -9,7 +9,7 @@
 | ↖ 设计 | [design/gacha_system.md](../design/gacha_system.md) §4 — 保底系统（Soft Pity / Hard Pity / 50:50 Rate-Up） |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 20 (PetRarity 枚举 — `scripts/pets/models/PetRarity.cs`)

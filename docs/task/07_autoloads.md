@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/data_models.md](../design/data_models.md) — GameData 数据字段 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (enums, constants)

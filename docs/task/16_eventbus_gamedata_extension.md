@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/architecture.md](../design/architecture.md) — 信号清单、数据字段 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (infrastructure — IDataSource, IPersistentStorage 定义好名称)

@@ -10,7 +10,7 @@
 | ↖ 实现 | [task 14_testing.md](14_testing.md) — 已有 xUnit 测试基础设施（41 个 match-3 核心测试） |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 18 (`CurrencyService`, `ICurrencyService`)

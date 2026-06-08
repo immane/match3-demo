@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PetDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+Id = "cat_sleepy_01"
+DisplayName = "Sleepy Cat"
+Type = 0
+Rarity = 0
+BaseLevel = 1
+MaxLevel = 30
+Description = "Always napping, but reliable when it counts"

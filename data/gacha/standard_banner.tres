@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GachaBannerResource" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/gacha/data/GachaBannerResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+BannerId = "standard_banner"
+DisplayName = "Standard Banner"
+CostPerPull = 50
+SoftPityStart = 70
+HardPity = 90
+SoftPityRateIncrease = 0.06
+RateUpRewardId = ""
+RateUpChanceOnSSR = 0.5

@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/ui_hud.md](../design/ui_hud.md) — HUD 布局、分数公式、连击动画、配色方案 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 07 (EventBus, GameData)

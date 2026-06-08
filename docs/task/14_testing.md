@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/testing.md](../design/testing.md) — 完整测试策略、用例清单、文件结构 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (BoardData — 测试需要构造数据)

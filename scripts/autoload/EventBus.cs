@@ -2,7 +2,7 @@ using Godot;
 
 namespace Match3Demo;
 
-public partial class EventBus : Node
+public partial class EventBus : Node, IPetEventBus, IGachaEventBus
 {
     public static EventBus Instance { get; private set; }
 
@@ -34,8 +34,48 @@ public partial class EventBus : Node
 
     [Signal] public delegate void ShowFloatingTextEventHandler(string text, Vector2 pos, Color color);
 
+	// Pet system signals
+	[Signal] public delegate void PetAcquiredEventHandler(string petDefId);
+	[Signal] public delegate void PetLeveledUpEventHandler(string petInstanceId, int newLevel);
+	[Signal] public delegate void PetEvolvedEventHandler(string oldPetInstanceId, string newPetDefId);
+	[Signal] public delegate void ActivePetChangedEventHandler(string petInstanceId);
+	[Signal] public delegate void PetFedEventHandler(string petInstanceId, string foodId);
+
+	// Gacha system signals
+	[Signal] public delegate void GachaPullResultEventHandler(string rewardId, int rarity, Godot.Collections.Dictionary pityState);
+	[Signal] public delegate void GachaPityMilestoneEventHandler(int pullsTowardGuarantee);
+	[Signal] public delegate void GachaMultiPullResultEventHandler(Godot.Collections.Array results);
+	[Signal] public delegate void GachaBeforePullEventHandler(string bannerId);
+
+	// Currency system signals
+	[Signal] public delegate void CurrencyChangedEventHandler(string currencyId, int newBalance, int delta);
+
     public override void _EnterTree()
     {
         Instance = this;
+    }
+
+    // IPetEventBus implementation
+    public void EmitPetAcquired(string petDefId) => EmitSignal(SignalName.PetAcquired, petDefId);
+    public void EmitPetLeveledUp(string petInstanceId, int newLevel) => EmitSignal(SignalName.PetLeveledUp, petInstanceId, newLevel);
+    public void EmitPetEvolved(string oldId, string newId) => EmitSignal(SignalName.PetEvolved, oldId, newId);
+    public void EmitActivePetChanged(string petInstanceId) => EmitSignal(SignalName.ActivePetChanged, petInstanceId);
+
+    // IGachaEventBus implementation
+    public void EmitGachaBeforePull(string bannerId) => EmitSignal(SignalName.GachaBeforePull, bannerId);
+    public void EmitGachaPullResult(string rewardId, int rarity) => EmitSignal(SignalName.GachaPullResult, rewardId, rarity, new Godot.Collections.Dictionary());
+    public void EmitGachaMultiPullResult(System.Collections.Generic.List<GachaRollResult> results)
+    {
+        var arr = new Godot.Collections.Array();
+        foreach (var r in results)
+        {
+            arr.Add(new Godot.Collections.Dictionary
+            {
+                ["rewardId"] = r.RewardId,
+                ["type"] = (int)r.Type,
+                ["rarity"] = (int)r.Rarity
+            });
+        }
+        EmitSignal(SignalName.GachaMultiPullResult, arr);
     }
 }

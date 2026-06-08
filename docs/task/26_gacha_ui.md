@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/gacha_system.md](../design/gacha_system.md) §7 — 多抽 UI（十连抽逐个展示、跳过按钮） |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 17 (ServiceInitializer — 服务定位器，注入 `GachaDrawService` / `IDataSource<GachaBanner>` / `ICurrencyService`)

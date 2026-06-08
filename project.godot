@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Match3 Demo"
-config/description="A crystal-themed match-3 puzzle demo"
+config/name="Match3 Pets"
+config/description="A crystal-themed match-3 pets puzzle"
 config/version="0.1.0"
 run/main_scene="res://assets/scenes/main.tscn"
 config/features=PackedStringArray("4.6", "C#")
@@ -25,6 +25,7 @@ general/default_playback_type.web=0
 GameData="*res://scripts/autoload/GameData.cs"
 EventBus="*res://scripts/autoload/EventBus.cs"
 AudioManager="*res://scripts/autoload/AudioManager.cs"
+ServiceInitializer="*res://scripts/autoload/ServiceInitializer.cs"
 
 [debug]
 

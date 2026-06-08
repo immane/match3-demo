@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/architecture.md](../design/architecture.md) — Main 场景树结构、导出配置 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 09 (Board 场景)

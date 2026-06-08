@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/currency_system.md](../design/currency_system.md) §8 — CurrencyDisplay 控件 + Tween 动画 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 16 (EventBus CurrencyChanged 信号)

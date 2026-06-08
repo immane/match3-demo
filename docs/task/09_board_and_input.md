@@ -9,7 +9,7 @@
 | ↖ 设计 | [design/architecture.md](../design/architecture.md) — Board 场景树结构 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 06 (Tile, TileManager)

@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/input_animation.md](../design/input_animation.md) — Tween 动画编排、粒子/震动/浮动文字 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 06 (Tile, TileManager)

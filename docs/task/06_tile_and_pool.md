@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/crystal_shader.md](../design/crystal_shader.md) — ShaderMaterial 参数配置 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (数据结构: TileData, BoardData, enums, constants)

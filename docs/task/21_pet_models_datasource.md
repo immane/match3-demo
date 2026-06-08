@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/pet_system.md](../design/pet_system.md) §5 — 数据源接口与实现 (IPetDataSource, ResourcePetDataSource) |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (IDataSource 泛型接口 — `scripts/utils/IDataSource.cs`)

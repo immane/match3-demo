@@ -8,7 +8,7 @@
 | ↖ 研究 | [research/10_godot4_syntax.md](../research/10_godot4_syntax.md) — Godot 4.x 语法参考 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - 无 (Phase 1, 可与其他 Phase 1 任务并行)

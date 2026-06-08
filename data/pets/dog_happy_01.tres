@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PetDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+Id = "dog_happy_01"
+DisplayName = "Happy Dog"
+Type = 1
+Rarity = 2
+BaseLevel = 1
+MaxLevel = 50
+Description = "Wagging tail happy dog, more excited with combos"

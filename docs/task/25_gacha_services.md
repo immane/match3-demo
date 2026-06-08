@@ -10,7 +10,7 @@
 | ↖ 设计 | [design/gacha_system.md](../design/gacha_system.md) §7 — 多抽（十连抽保底规则、货币预检、批量信号） |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (WeightedRandom, IPersistentStorage — `scripts/utils/WeightedRandom.cs`, `scripts/utils/IPersistentStorage.cs`)

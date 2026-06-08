@@ -20,6 +20,11 @@ public partial class GameData : Node
     public bool IsMobile { get; set; } = false;
     public bool IsWeb { get; set; } = false;
 
+	public Godot.Collections.Dictionary<string, int> CurrencyBalances { get; set; } = new();
+	public Godot.Collections.Array<Godot.Collections.Dictionary> OwnedPetsRaw { get; set; } = new();
+	public string ActivePetId { get; set; } = "";
+	public Godot.Collections.Dictionary<string, Godot.Collections.Dictionary> GachaPityStates { get; set; } = new();
+
     public override void _EnterTree()
     {
         Instance = this;
@@ -28,6 +33,16 @@ public partial class GameData : Node
     public override void _Ready()
     {
         DetectPlatform();
+        AddCurrency("soft_currency", 500);
+        CallDeferred(MethodName.AddDefaultPet);
+    }
+
+    private void AddDefaultPet()
+    {
+        if (ServiceInitializer.Instance == null) return;
+        var petService = ServiceInitializer.Instance.GetService<IPetCollectionService>();
+        if (petService != null && petService.GetAllOwnedPets().Count == 0)
+            petService.AddPet("cat_sleepy_01");
     }
 
     private void DetectPlatform()
@@ -50,6 +65,8 @@ public partial class GameData : Node
         EventBus.Instance.EmitSignal(EventBus.SignalName.ComboUpdated, CurrentCombo);
         EventBus.Instance.EmitSignal(EventBus.SignalName.MovesChanged, MovesRemaining);
         EventBus.Instance.EmitSignal(EventBus.SignalName.TimeChanged, TimeRemaining);
+
+        AddCurrency("soft_currency", 500);
     }
 
     public void AddScore(int points)
@@ -75,4 +92,27 @@ public partial class GameData : Node
             BestCombo = combo;
         EventBus.Instance.EmitSignal(EventBus.SignalName.ComboUpdated, combo);
     }
+
+	public void AddCurrency(string currencyId, int amount)
+	{
+		if (!CurrencyBalances.ContainsKey(currencyId))
+			CurrencyBalances[currencyId] = 0;
+		CurrencyBalances[currencyId] += amount;
+		EventBus.Instance.EmitSignal(EventBus.SignalName.CurrencyChanged, currencyId, CurrencyBalances[currencyId], amount);
+	}
+
+	public bool SpendCurrency(string currencyId, int amount)
+	{
+		int current = CurrencyBalances.ContainsKey(currencyId) ? CurrencyBalances[currencyId] : 0;
+		if (current < amount)
+			return false;
+		CurrencyBalances[currencyId] = current - amount;
+		EventBus.Instance.EmitSignal(EventBus.SignalName.CurrencyChanged, currencyId, CurrencyBalances[currencyId], -amount);
+		return true;
+	}
+
+	public int GetCurrencyBalance(string currencyId)
+	{
+		return CurrencyBalances.ContainsKey(currencyId) ? CurrencyBalances[currencyId] : 0;
+	}
 }

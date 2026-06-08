@@ -14,6 +14,8 @@ public partial class TitleScreen : Control
 
 	public override void _Ready()
 	{
+		AddToGroup("title_screen");
+
 		MouseFilter = MouseFilterEnum.Stop;
 
 		_startButton = GetNode<Button>("VBoxContainer/StartButton");
@@ -33,6 +35,8 @@ public partial class TitleScreen : Control
 		_startButton.AddThemeFontSizeOverride("font_size", 30);
 		_startButton.Pressed += OnStartPressed;
 
+		// Pet/Gacha buttons are added by Main via AddTitleButtons()
+
 		_highScoreLabel.Text = $"BEST: {GameData.Instance.HighScore}";
 
 		var tween = CreateTween();
@@ -49,5 +53,44 @@ public partial class TitleScreen : Control
 		MouseFilter = MouseFilterEnum.Ignore;
 		Hide();
 		EmitSignal(SignalName.GameStarted);
+	}
+
+	public void AddExtraButtons(Main main)
+	{
+		var vbox = GetNode<VBoxContainer>("VBoxContainer");
+
+		var spacer = new Control();
+		spacer.CustomMinimumSize = new Vector2(0, 16);
+		vbox.AddChild(spacer);
+
+		var petBtn = new Button();
+		petBtn.Text = "PETS";
+		petBtn.CustomMinimumSize = new Vector2(0, 50);
+		petBtn.AddThemeFontSizeOverride("font_size", 20);
+		petBtn.Pressed += () =>
+		{
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
+			Hide();
+			main.ShowPetCollection();
+		};
+		vbox.AddChild(petBtn);
+
+		var spacer2 = new Control();
+		spacer2.CustomMinimumSize = new Vector2(0, 8);
+		vbox.AddChild(spacer2);
+
+		var gachaBtn = new Button();
+		gachaBtn.Text = "GACHA";
+		gachaBtn.CustomMinimumSize = new Vector2(0, 50);
+		gachaBtn.AddThemeFontSizeOverride("font_size", 20);
+		gachaBtn.Pressed += () =>
+		{
+			EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
+			Hide();
+			main.ShowGachaUI();
+		};
+		vbox.AddChild(gachaBtn);
+
+		vbox.OffsetBottom += 130;
 	}
 }
