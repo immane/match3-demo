@@ -4,61 +4,61 @@ namespace Match3Demo;
 
 public partial class PauseMenu : Control
 {
-    private Label _pauseLabel;
-    private Button _resumeButton;
-    private Button _restartButton;
-    private Button _quitButton;
+	private Label _pauseLabel;
+	private Button _resumeButton;
+	private Button _restartButton;
+	private Button _quitButton;
 
-    public override void _Ready()
-    {
-        ProcessMode = ProcessModeEnum.WhenPaused;
-        MouseFilter = MouseFilterEnum.Ignore;
+	public override void _Ready()
+	{
+		ProcessMode = ProcessModeEnum.WhenPaused;
+		MouseFilter = MouseFilterEnum.Ignore;
 
-        _pauseLabel = GetNode<Label>("VBoxContainer/PauseLabel");
-        _resumeButton = GetNode<Button>("VBoxContainer/ResumeButton");
-        _restartButton = GetNode<Button>("VBoxContainer/RestartButton");
-        _quitButton = GetNode<Button>("VBoxContainer/QuitButton");
+		_pauseLabel = GetNode<Label>("VBoxContainer/PauseLabel");
+		_resumeButton = GetNode<Button>("VBoxContainer/ResumeButton");
+		_restartButton = GetNode<Button>("VBoxContainer/RestartButton");
+		_quitButton = GetNode<Button>("VBoxContainer/QuitButton");
 
-        EventBus.Instance.GamePaused += OnGamePaused;
-        EventBus.Instance.GameResumed += OnGameResumed;
+		EventBus.Instance.GamePaused += OnGamePaused;
+		EventBus.Instance.GameResumed += OnGameResumed;
 
-        _pauseLabel.AddThemeFontSizeOverride("font_size", 48);
-        _pauseLabel.AddThemeColorOverride("font_color", new Color("ffd700"));
+		_pauseLabel.AddThemeFontSizeOverride("font_size", 48);
+		_pauseLabel.AddThemeColorOverride("font_color", new Color("ffd700"));
 
-        _resumeButton.Pressed += OnResumePressed;
-        _restartButton.Pressed += OnRestartPressed;
-        _quitButton.Pressed += OnQuitPressed;
-    }
+		_resumeButton.Pressed += OnResumePressed;
+		_restartButton.Pressed += OnRestartPressed;
+		_quitButton.Pressed += OnQuitPressed;
+	}
 
-    private void OnGamePaused()
-    {
-        MouseFilter = MouseFilterEnum.Stop;
-        Show();
-    }
+	private void OnGamePaused()
+	{
+		MouseFilter = MouseFilterEnum.Stop;
+		Show();
+	}
 
-    private void OnGameResumed()
-    {
-        MouseFilter = MouseFilterEnum.Ignore;
-        Hide();
-    }
+	private void OnGameResumed()
+	{
+		MouseFilter = MouseFilterEnum.Ignore;
+		Hide();
+	}
 
-    private void OnResumePressed()
-    {
-        var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
-        sm?.TogglePause();
-    }
+	private void OnResumePressed()
+	{
+		var sm = GetTree().GetFirstNodeInGroup("state_machine") as GameStateMachine;
+		sm?.TogglePause();
+	}
 
-    private void OnRestartPressed()
-    {
-        var board = GetTree().GetFirstNodeInGroup("board") as Board;
-        GameData.Instance.ResetLevel();
-        board?.ResetBoard();
-        MouseFilter = MouseFilterEnum.Ignore;
-        Hide();
-    }
+	private void OnRestartPressed()
+	{
+		var board = GetTree().GetFirstNodeInGroup("board") as Board;
+		GameData.Instance.ResetLevel();
+		board?.ResetBoard();
+		MouseFilter = MouseFilterEnum.Ignore;
+		Hide();
+	}
 
-    private void OnQuitPressed()
-    {
-        GetTree().ReloadCurrentScene();
-    }
+	private void OnQuitPressed()
+	{
+		GetTree().ReloadCurrentScene();
+	}
 }
