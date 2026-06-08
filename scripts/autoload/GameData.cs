@@ -11,6 +11,7 @@ public partial class GameData : Node
     public int CurrentCombo { get; set; } = 0;
     public int BestCombo { get; set; } = 0;
     public int MovesRemaining { get; set; } = 30;
+    public float TimeRemaining { get; set; } = 30f;
 
     public bool MusicEnabled { get; set; } = true;
     public bool SfxEnabled { get; set; } = true;
@@ -43,10 +44,12 @@ public partial class GameData : Node
         CurrentScore = 0;
         CurrentCombo = 0;
         MovesRemaining = 30;
+        TimeRemaining = 30f;
 
         EventBus.Instance.EmitSignal(EventBus.SignalName.ScoreChanged, CurrentScore, 0);
         EventBus.Instance.EmitSignal(EventBus.SignalName.ComboUpdated, CurrentCombo);
         EventBus.Instance.EmitSignal(EventBus.SignalName.MovesChanged, MovesRemaining);
+        EventBus.Instance.EmitSignal(EventBus.SignalName.TimeChanged, TimeRemaining);
     }
 
     public void AddScore(int points)

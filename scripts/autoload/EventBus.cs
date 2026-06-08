@@ -20,7 +20,8 @@ public partial class EventBus : Node
 
     [Signal] public delegate void ScoreChangedEventHandler(int newScore, int delta);
     [Signal] public delegate void ComboUpdatedEventHandler(int combo);
-    [Signal] public delegate void MovesChangedEventHandler(int remaining);
+	[Signal] public delegate void MovesChangedEventHandler(int remaining);
+	[Signal] public delegate void TimeChangedEventHandler(float remaining);
 
     [Signal] public delegate void GameStateChangedEventHandler(int oldState, int newState);
     [Signal] public delegate void GamePausedEventHandler();

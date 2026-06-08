@@ -57,8 +57,10 @@ public partial class PauseMenu : Control
 	{
 		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
 		var board = GetTree().GetFirstNodeInGroup("board") as Board;
+		var main = GetTree().GetFirstNodeInGroup("main") as Main;
 		GameData.Instance.ResetLevel();
 		board?.ResetBoard();
+		main?.StartCountdown();
 		MouseFilter = MouseFilterEnum.Ignore;
 		Hide();
 	}

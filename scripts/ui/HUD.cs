@@ -8,6 +8,7 @@ public partial class HUD : CanvasLayer
 	private Label _bestScoreLabel;
 	private Label _comboLabel;
 	private Label _movesLabel;
+	private Label _timerLabel;
 	private Button _pauseButton;
 
 	private int _displayedScore;
@@ -25,6 +26,7 @@ public partial class HUD : CanvasLayer
 		EventBus.Instance.ScoreChanged += OnScoreChanged;
 		EventBus.Instance.ComboUpdated += OnComboUpdated;
 		EventBus.Instance.MovesChanged += OnMovesChanged;
+		EventBus.Instance.TimeChanged += OnTimeChanged;
 		_pauseButton.Pressed += OnPausePressed;
 
 		_scoreLabel.AddThemeFontSizeOverride("font_size", 26);
@@ -36,6 +38,15 @@ public partial class HUD : CanvasLayer
 		_bestScoreLabel.AddThemeColorOverride("font_color", new Color("aaaaaa"));
 		_comboLabel.AddThemeColorOverride("font_color", new Color("ffaa00"));
 		_movesLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+
+		var timerSection = new VBoxContainer();
+		timerSection.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		_timerLabel = new Label();
+		_timerLabel.Text = "TIME: 30";
+		_timerLabel.AddThemeFontSizeOverride("font_size", 26);
+		_timerLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+		timerSection.AddChild(_timerLabel);
+		GetNode<HBoxContainer>("TopPanel/HBoxContainer").AddChild(timerSection);
 
 		UpdateDisplay();
 	}
@@ -103,6 +114,19 @@ public partial class HUD : CanvasLayer
 			_movesLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
 	}
 
+	private void OnTimeChanged(float remaining)
+	{
+		int seconds = Mathf.CeilToInt(remaining);
+		_timerLabel.Text = $"TIME: {seconds}";
+
+		if (seconds <= 5)
+			_timerLabel.AddThemeColorOverride("font_color", new Color("ff4444"));
+		else if (seconds <= 10)
+			_timerLabel.AddThemeColorOverride("font_color", new Color("ff8800"));
+		else
+			_timerLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+	}
+
 	private void OnPausePressed()
 	{
 		EventBus.Instance.EmitSignal(EventBus.SignalName.PlayEffect, "ui_click", Vector2.Zero);
@@ -115,5 +139,6 @@ public partial class HUD : CanvasLayer
 		EventBus.Instance.ScoreChanged -= OnScoreChanged;
 		EventBus.Instance.ComboUpdated -= OnComboUpdated;
 		EventBus.Instance.MovesChanged -= OnMovesChanged;
+		EventBus.Instance.TimeChanged -= OnTimeChanged;
 	}
 }
