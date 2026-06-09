@@ -39,6 +39,21 @@ public partial class GachaBannerUI : Control
 		_gachaService = ServiceInitializer.Instance?.GetService<GachaDrawService>();
 		_bannerDataSource = ServiceInitializer.Instance?.GetService<IDataSource<GachaBanner>>();
 
+		// Fallback: create services directly if DI failed
+		if (_gachaService == null)
+		{
+			GD.Print("[GachaBannerUI] ServiceInitializer failed, creating fallback services");
+			var storage = new GodotFileStorage();
+			var currency = new CurrencyService(storage);
+			var roller = new GachaRollService();
+			var banners = new GachaBannerDataSource();
+			var petDs = new ResourcePetDataSource();
+			var pets = new PetCollectionService(petDs, EventBus.Instance, storage);
+			var pity = new GachaPityTracker(storage);
+			_gachaService = new GachaDrawService(currency, roller, banners, pets, EventBus.Instance, pity);
+			_bannerDataSource = banners;
+		}
+
 		EventBus.Instance.GachaPullResult += OnPullResult;
 		EventBus.Instance.GachaMultiPullResult += OnMultiPullResult;
 		EventBus.Instance.CurrencyChanged += OnCurrencyChanged;

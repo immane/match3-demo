@@ -66,7 +66,7 @@ public class GachaBannerDataSource : IDataSource<GachaBanner>
     public GachaBanner? GetOrCreateDefault(string id)
     {
         var banner = Get(id);
-        if (banner != null) return banner;
+        if (banner != null && banner.Pool.Count > 0) return banner;
 
         if (id == "standard_banner")
         {
