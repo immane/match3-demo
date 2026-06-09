@@ -74,6 +74,7 @@ public partial class Tile : Node2D
 		}
 
 		Show();
+		_catTexture.Visible = true;
 		int type = TileData.CrystalType;
 		if (type >= 0 && type < CatTextures.Length)
 			_catTexture.Texture = GD.Load<Texture2D>(CatTextures[type]);

@@ -8,24 +8,27 @@ public enum PetMood { Walking, Idle, Sitting, Sleeping }
 public partial class PetActor : Node2D
 {
 	private string _displayName = "";
-	private PetRarity _rarity = PetRarity.Common;
+	private PetRarity _rarity;
 	private PetNeeds? _needs;
 	private Color _bodyColor = Colors.Gray;
+	private Color _accentColor = Colors.White;
+	private Color _earInner = new(1f, 0.7f, 0.75f);
+	private Color _blushColor = new(1f, 0.5f, 0.5f, 0.25f);
 	private bool _showBars;
-	private PetMood _mood = PetMood.Walking;
+	private PetMood _mood = PetMood.Idle;
 	private float _moodTimer;
-	private float _sitTimer;
-	private float _animTimer;
-	private bool _facingRight = true;
+	private float _animTime;
+	private float _bobY;
 
 	private Tween? _walkTween;
 	private Vector2 _targetPos;
-	private Vector2 _walkAreaMin;
-	private Vector2 _walkAreaMax;
+	private Vector2 _areaMin;
+	private Vector2 _areaMax;
 	private System.Random _rng = new();
+	private Sprite2D? _sprite;
+	private bool _hasSprite;
 
 	[Signal] public delegate void PetClickedEventHandler(InputEvent inputEvent);
-
 	public PetInstance? PetInstance { get; set; }
 	public PetDefinition? PetDef { get; set; }
 
@@ -33,9 +36,8 @@ public partial class PetActor : Node2D
 	{
 		ZIndex = 100;
 		Scale = new Vector2(1.5f, 1.5f);
-		_walkAreaMin = Position - new Vector2(100, 80);
-		_walkAreaMax = Position + new Vector2(100, 80);
-		_targetPos = Position;
+		_sprite = GetNodeOrNull<Sprite2D>("Sprite");
+		_hasSprite = _sprite != null;
 		PickMood();
 	}
 
@@ -44,353 +46,208 @@ public partial class PetActor : Node2D
 		_displayName = !string.IsNullOrEmpty(pet.Nickname) ? pet.Nickname : def.DisplayName;
 		_rarity = def.Rarity;
 		_needs = pet.Needs;
-		_bodyColor = GetRarityColor(def.Rarity);
 		_showBars = showBars;
 		PetInstance = pet;
 		PetDef = def;
+
+		(_bodyColor, _accentColor) = GetRarityColors(_rarity);
+
+		if (_sprite != null && def.SpriteSheet != null)
+		{
+			_sprite.Texture = def.SpriteSheet;
+			_sprite.Hframes = Math.Max(1, def.FrameCount);
+			_sprite.Visible = true;
+			_hasSprite = true;
+		}
+		else
+		{
+			if (_sprite != null) _sprite.Visible = false;
+			_hasSprite = false;
+		}
 		QueueRedraw();
 	}
 
-	public void SetWalkArea(Vector2 min, Vector2 max)
-	{
-		_walkAreaMin = min;
-		_walkAreaMax = max;
-	}
+	public void SetWalkArea(Vector2 min, Vector2 max) { _areaMin = min; _areaMax = max; }
 
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
-		_animTimer += dt;
+		_animTime += dt;
 		_moodTimer -= dt;
-
-		if (_moodTimer <= 0)
-			PickMood();
+		if (_moodTimer <= 0) PickMood();
 
 		switch (_mood)
 		{
 			case PetMood.Walking:
-				if (_walkTween == null || !_walkTween.IsRunning())
-					WalkToNewTarget();
+				if (_walkTween == null || !_walkTween.IsRunning()) WalkTo();
+				_bobY = Mathf.Sin(_animTime * 7f) * 3f;
 				break;
-			case PetMood.Sitting:
-				_sitTimer -= dt;
-				if (_sitTimer <= 0) PickMood();
+			case PetMood.Idle:
+				_bobY = Mathf.Sin(_animTime * 3f) * 1.5f;
 				break;
-			case PetMood.Sleeping:
+			default:
+				_bobY = 0;
 				break;
 		}
+
+		if (_hasSprite && _sprite != null && _sprite.Hframes > 1 && _mood == PetMood.Walking)
+			_sprite.Frame = (int)(_animTime * 6f) % _sprite.Hframes;
 
 		QueueRedraw();
 	}
 
 	private void PickMood()
 	{
-		if (_needs != null && _needs.Energy < 30f)
-		{
-			_mood = PetMood.Sleeping;
-			_moodTimer = _rng.Next(4, 8);
-			_walkTween?.Kill();
-			return;
-		}
-
-		double roll = _rng.NextDouble();
-		if (roll < 0.5f)
-		{
-			_mood = PetMood.Walking;
-			_moodTimer = _rng.Next(2, 5);
-		}
-		else if (roll < 0.8f)
-		{
-			_mood = PetMood.Sitting;
-			_moodTimer = _rng.Next(2, 4);
-			_walkTween?.Kill();
-		}
-		else
-		{
-			_mood = PetMood.Idle;
-			_moodTimer = _rng.Next(1, 3);
-			_walkTween?.Kill();
-		}
+		if (_needs != null && _needs.Energy < 25f) { _mood = PetMood.Sleeping; _moodTimer = _rng.Next(4, 8); _walkTween?.Kill(); return; }
+		double r = _rng.NextDouble();
+		if (r < 0.45f) { _mood = PetMood.Walking; _moodTimer = _rng.Next(2, 4); }
+		else if (r < 0.75f) { _mood = PetMood.Sitting; _moodTimer = _rng.Next(2, 5); _walkTween?.Kill(); }
+		else { _mood = PetMood.Idle; _moodTimer = _rng.Next(1, 3); _walkTween?.Kill(); }
 	}
 
-	private void WalkToNewTarget()
+	private void WalkTo()
 	{
-		float x = (float)(_rng.NextDouble() * (_walkAreaMax.X - _walkAreaMin.X) + _walkAreaMin.X);
-		float y = (float)(_rng.NextDouble() * (_walkAreaMax.Y - _walkAreaMin.Y) + _walkAreaMin.Y);
+		float x = (float)(_rng.NextDouble() * (_areaMax.X - _areaMin.X) + _areaMin.X);
+		float y = (float)(_rng.NextDouble() * (_areaMax.Y - _areaMin.Y) + _areaMin.Y);
 		_targetPos = new Vector2(x, y);
-
-		_facingRight = _targetPos.X > Position.X;
-
+		float dist = Position.DistanceTo(_targetPos);
 		_walkTween?.Kill();
 		_walkTween = CreateTween();
-		float dist = Position.DistanceTo(_targetPos);
-		float dur = Mathf.Clamp(dist / 80f, 0.6f, 3f);
-		_walkTween.TweenProperty(this, "position", _targetPos, dur)
+		_walkTween.TweenProperty(this, "position", _targetPos, Mathf.Clamp(dist / 80f, 0.5f, 2.5f))
 			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		_mood = PetMood.Walking;
 	}
 
 	public override void _Draw()
 	{
+		if (_hasSprite) return;
+		float y = _bobY;
 		var font = ThemeDB.FallbackFont;
-		float bob = 0, legBob = 0;
-		bool isSleeping = _mood == PetMood.Sleeping;
-		bool isSitting = _mood == PetMood.Sitting;
-		bool isWalking = _mood == PetMood.Walking;
 
-		if (isWalking) { bob = Mathf.Sin(_animTimer * 6f) * 4f; legBob = Mathf.Sin(_animTimer * 12f) * 5f; }
-		else if (_mood == PetMood.Idle) bob = Mathf.Sin(_animTimer * 3f) * 2f;
+		if (_mood == PetMood.Sleeping) DrawSleeping(y);
+		else if (_mood == PetMood.Sitting) DrawSitting(y);
+		else DrawStanding(y);
 
-		float y0 = bob;
-
-		if (isSleeping)
-		{
-			DrawSleepingCat(y0, font);
-		}
-		else if (isSitting)
-		{
-			DrawSittingCat(y0, legBob);
-		}
-		else
-		{
-			DrawStandingCat(y0, legBob, isWalking);
-		}
-
-		// Name tag
 		if (font != null)
 		{
-			float nameY = isSleeping ? y0 - 22 : (isSitting ? y0 - 36 : y0 - 44);
-			DrawString(font, new Vector2(-60, nameY), _displayName, HorizontalAlignment.Center, 120, 16, Colors.White);
+			float ny = _mood == PetMood.Sleeping ? y - 20 : (_mood == PetMood.Sitting ? y - 32 : y - 38);
+			DrawString(font, new Vector2(-50, ny), _displayName, HorizontalAlignment.Center, 100, 14, Colors.White);
 		}
 
-		// Needs bars
 		if (_showBars && _needs != null)
 		{
-			float barY = isSleeping ? y0 - 38 : (isSitting ? y0 - 50 : y0 - 58);
-			float barW = 60, barH = 5;
-			float bx = -barW / 2f;
-			DrawBar(bx, barY, barW * (_needs.Hunger / PetNeeds.MaxValue), barH, new Color(1f, 0.35f, 0.1f));
-			DrawBar(bx, barY + 7, barW * (_needs.Happiness / PetNeeds.MaxValue), barH, new Color(1f, 0.7f, 0.1f));
-			DrawBar(bx, barY + 14, barW * (_needs.Energy / PetNeeds.MaxValue), barH, new Color(0.2f, 0.65f, 1f));
+			float by = _mood == PetMood.Sleeping ? y - 32 : (_mood == PetMood.Sitting ? y - 44 : y - 50);
+			float w = 56, h = 4, bx = -w / 2f;
+			Bar(bx, by, w * _needs.Hunger / PetNeeds.MaxValue, h, new Color(1f, 0.3f, 0.1f));
+			Bar(bx, by + 6, w * _needs.Happiness / PetNeeds.MaxValue, h, new Color(1f, 0.65f, 0.1f));
+			Bar(bx, by + 12, w * _needs.Energy / PetNeeds.MaxValue, h, new Color(0.2f, 0.6f, 1f));
 		}
 	}
 
-	private void DrawStandingCat(float y0, float legBob, bool walking)
+	private void DrawStanding(float y)
 	{
-		float tailSway = walking ? Mathf.Sin(_animTimer * 8f) * 6f : 0;
-		float earBob = walking ? Mathf.Abs(Mathf.Sin(_animTimer * 12f)) * 2f : 0;
+		float r = 22f;
+		DrawEllipse(new Vector2(0, y + r + 4), r * 1.1f, 5f, new Color(0, 0, 0, 0.1f));
+		DrawCircle(new Vector2(0, y + 6), r - 2, _bodyColor);
+		DrawCircle(new Vector2(0, y + 6), r - 2, _accentColor, false, 2f);
+		DrawCircle(new Vector2(0, y - 8), r - 2, _bodyColor);
+		DrawCircle(new Vector2(0, y - 8), r - 2, _accentColor, false, 2f);
 
-		// Shadow
-		DrawEllipse(new Vector2(0, y0 + 30), 22, 6, new Color(0, 0, 0, 0.12f));
+		Triangle(-16, y - 22, -8, y - 30, -3, y - 20, _bodyColor);
+		Triangle(16, y - 22, 8, y - 30, 3, y - 20, _bodyColor);
+		Triangle(-13, y - 23, -9, y - 27, -5, y - 21, _earInner);
+		Triangle(13, y - 23, 9, y - 27, 5, y - 21, _earInner);
 
-		// Tail (behind body)
-		DrawThickCurve(new Vector2(10, y0 + 18), new Vector2(24 + tailSway, y0 + 8), new Vector2(20, y0 - 12 + tailSway), _bodyColor.Darkened(0.05f), 5f);
-		// Tail tip
-		DrawCircle(new Vector2(22, y0 - 10 + tailSway), 5f, _bodyColor.Darkened(0.05f));
+		DrawCircle(new Vector2(-7, y - 10), 5.5f, Colors.White);
+		DrawCircle(new Vector2(7, y - 10), 5.5f, Colors.White);
+		DrawCircle(new Vector2(-6, y - 9), 3f, Colors.Black);
+		DrawCircle(new Vector2(8, y - 9), 3f, Colors.Black);
+		DrawCircle(new Vector2(-8, y - 12), 1.8f, Colors.White);
+		DrawCircle(new Vector2(6, y - 12), 1.8f, Colors.White);
 
-		// Legs
-		float lx = walking ? legBob : 0;
-		DrawLine(new Vector2(-8, y0 + 22), new Vector2(-8 + lx, y0 + 32), _bodyColor.Darkened(0.08f), 6f);
-		DrawLine(new Vector2(8, y0 + 22), new Vector2(8 - lx, y0 + 32), _bodyColor.Darkened(0.08f), 6f);
-		// Paws
-		DrawCircle(new Vector2(-8 + lx, y0 + 33), 4.5f, _bodyColor.Darkened(0.05f));
-		DrawCircle(new Vector2(8 - lx, y0 + 33), 4.5f, _bodyColor.Darkened(0.05f));
+		DrawCircle(new Vector2(0, y - 3), 2f, new Color(1f, 0.5f, 0.55f));
+		DrawLine(new Vector2(0, y - 1), new Vector2(-3, y + 2), new Color(0.3f, 0.3f, 0.3f), 1.5f);
+		DrawLine(new Vector2(0, y - 1), new Vector2(3, y + 2), new Color(0.3f, 0.3f, 0.3f), 1.5f);
 
-		// Body (small oval)
-		DrawEllipse(new Vector2(0, y0 + 12), 18, 16, _bodyColor);
-		// Outline body
-		DrawEllipseOutline(new Vector2(0, y0 + 12), 18, 16, 24, Colors.White, 2f);
+		DrawCircle(new Vector2(-12, y - 6), 3.5f, _blushColor);
+		DrawCircle(new Vector2(12, y - 6), 3.5f, _blushColor);
 
-		// Front paws (tiny circles on top of body)
-		DrawCircle(new Vector2(-6, y0 + 6), 4f, _bodyColor.Darkened(0.05f));
-		DrawCircle(new Vector2(6, y0 + 6), 4f, _bodyColor.Darkened(0.05f));
+		DrawLine(new Vector2(-5, y - 2), new Vector2(-18, y - 4), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
+		DrawLine(new Vector2(-5, y - 1), new Vector2(-18, y + 1), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
+		DrawLine(new Vector2(5, y - 2), new Vector2(18, y - 4), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
+		DrawLine(new Vector2(5, y - 1), new Vector2(18, y + 1), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
 
-		// Head (big circle, center-right or center-left above body)
-		DrawCircle(new Vector2(0, y0 - 4), 20, _bodyColor);
-		DrawCircle(new Vector2(0, y0 - 4), 20, Colors.White, false, 2.5f);
-
-		// Ears
-		DrawTriangle(new Vector2(-18, y0 - 16), new Vector2(-8, y0 - 28 + earBob), new Vector2(-4, y0 - 16), _bodyColor);
-		DrawTriangle(new Vector2(18, y0 - 16), new Vector2(8, y0 - 28 + earBob), new Vector2(4, y0 - 16), _bodyColor);
-		// Inner ears
-		DrawTriangle(new Vector2(-15, y0 - 17), new Vector2(-9, y0 - 24 + earBob), new Vector2(-6, y0 - 17), new Color(1f, 0.75f, 0.8f));
-		DrawTriangle(new Vector2(15, y0 - 17), new Vector2(9, y0 - 24 + earBob), new Vector2(6, y0 - 17), new Color(1f, 0.75f, 0.8f));
-
-		// Face
-		// Big sparkling eyes
-		DrawCircle(new Vector2(-8, y0 - 6), 7, Colors.White);
-		DrawCircle(new Vector2(8, y0 - 6), 7, Colors.White);
-		DrawCircle(new Vector2(-7, y0 - 5), 3.5f, new Color(0.1f, 0.1f, 0.15f));
-		DrawCircle(new Vector2(9, y0 - 5), 3.5f, new Color(0.1f, 0.1f, 0.15f));
-		// Eye highlights (cute shine)
-		DrawCircle(new Vector2(-9.5f, y0 - 8.5f), 2.2f, Colors.White);
-		DrawCircle(new Vector2(-6.5f, y0 - 5.5f), 1.2f, Colors.White);
-		DrawCircle(new Vector2(6.5f, y0 - 8.5f), 2.2f, Colors.White);
-		DrawCircle(new Vector2(9.5f, y0 - 5.5f), 1.2f, Colors.White);
-
-		// Tiny pink nose
-		DrawTriangle(new Vector2(-3, y0 + 4), new Vector2(3, y0 + 4), new Vector2(0, y0 + 2), new Color(1f, 0.55f, 0.6f));
-
-		// Mouth
-		DrawArc(new Vector2(-4, y0 + 5), 4, Mathf.Pi * 0.1f, Mathf.Pi * 0.5f, 8, new Color(0.3f, 0.3f, 0.3f), 1.5f);
-		DrawArc(new Vector2(4, y0 + 5), 4, Mathf.Pi * 0.5f, Mathf.Pi * 0.9f, 8, new Color(0.3f, 0.3f, 0.3f), 1.5f);
-
-		// Whiskers
-		DrawLine(new Vector2(-6, y0 + 3), new Vector2(-20, y0 - 2), new Color(0.5f, 0.5f, 0.5f, 0.6f), 1.5f);
-		DrawLine(new Vector2(-5, y0 + 4), new Vector2(-20, y0 + 5), new Color(0.5f, 0.5f, 0.5f, 0.6f), 1.5f);
-		DrawLine(new Vector2(6, y0 + 3), new Vector2(20, y0 - 2), new Color(0.5f, 0.5f, 0.5f, 0.6f), 1.5f);
-		DrawLine(new Vector2(5, y0 + 4), new Vector2(20, y0 + 5), new Color(0.5f, 0.5f, 0.5f, 0.6f), 1.5f);
-
-		// Blush
-		DrawCircle(new Vector2(-14, y0 - 1), 4.5f, new Color(1f, 0.6f, 0.6f, 0.25f));
-		DrawCircle(new Vector2(14, y0 - 1), 4.5f, new Color(1f, 0.6f, 0.6f, 0.25f));
+		float lx = _mood == PetMood.Walking ? Mathf.Sin(_animTime * 10f) * 3f : 0;
+		DrawLine(new Vector2(-6, y + 18), new Vector2(-6 + lx, y + 24), _bodyColor.Darkened(0.1f), 4f);
+		DrawLine(new Vector2(6, y + 18), new Vector2(6 - lx, y + 24), _bodyColor.Darkened(0.1f), 4f);
 	}
 
-	private void DrawSittingCat(float y0, float legBob)
+	private void DrawSitting(float y)
 	{
-		// Shadow
-		DrawEllipse(new Vector2(0, y0 + 32), 24, 8, new Color(0, 0, 0, 0.12f));
+		float r = 22f;
+		DrawCircle(new Vector2(0, y + 8), r, _bodyColor);
+		DrawCircle(new Vector2(0, y + 8), r, _accentColor, false, 2f);
+		DrawCircle(new Vector2(0, y - 8), r - 2, _bodyColor);
+		DrawCircle(new Vector2(0, y - 8), r - 2, _accentColor, false, 2f);
 
-		// Body (rounder when sitting)
-		DrawCircle(new Vector2(0, y0 + 14), 20, _bodyColor);
-		DrawCircle(new Vector2(0, y0 + 14), 20, Colors.White, false, 2.5f);
+		Triangle(-16, y - 24, -8, y - 32, -3, y - 20, _bodyColor);
+		Triangle(16, y - 24, 8, y - 32, 3, y - 20, _bodyColor);
+		Triangle(-13, y - 25, -9, y - 29, -5, y - 21, _earInner);
+		Triangle(13, y - 25, 9, y - 29, 5, y - 21, _earInner);
 
-		// Tail wrapping around from side
-		DrawThickCurve(new Vector2(18, y0 + 18), new Vector2(26, y0 + 12), new Vector2(28 + legBob, y0), _bodyColor.Darkened(0.05f), 5f);
+		DrawCircle(new Vector2(-7, y - 10), 6f, Colors.White);
+		DrawCircle(new Vector2(7, y - 10), 6f, Colors.White);
+		DrawCircle(new Vector2(-6, y - 9), 3.5f, Colors.Black);
+		DrawCircle(new Vector2(8, y - 9), 3.5f, Colors.Black);
+		DrawCircle(new Vector2(-8, y - 12), 2.2f, Colors.White);
+		DrawCircle(new Vector2(6, y - 12), 2.2f, Colors.White);
 
-		// Paws in front
-		DrawCircle(new Vector2(-8, y0 + 10), 5f, _bodyColor.Darkened(0.05f));
-		DrawCircle(new Vector2(8, y0 + 10), 5f, _bodyColor.Darkened(0.05f));
-
-		// Head
-		DrawCircle(new Vector2(0, y0 - 6), 20, _bodyColor);
-		DrawCircle(new Vector2(0, y0 - 6), 20, Colors.White, false, 2.5f);
-
-		// Ears
-		DrawTriangle(new Vector2(-18, y0 - 18), new Vector2(-8, y0 - 30), new Vector2(-4, y0 - 18), _bodyColor);
-		DrawTriangle(new Vector2(18, y0 - 18), new Vector2(8, y0 - 30), new Vector2(4, y0 - 18), _bodyColor);
-		DrawTriangle(new Vector2(-15, y0 - 19), new Vector2(-9, y0 - 26), new Vector2(-6, y0 - 19), new Color(1f, 0.75f, 0.8f));
-		DrawTriangle(new Vector2(15, y0 - 19), new Vector2(9, y0 - 26), new Vector2(6, y0 - 19), new Color(1f, 0.75f, 0.8f));
-
-		// Big eyes
-		DrawCircle(new Vector2(-8, y0 - 8), 7.5f, Colors.White);
-		DrawCircle(new Vector2(8, y0 - 8), 7.5f, Colors.White);
-		DrawCircle(new Vector2(-7, y0 - 7), 4f, new Color(0.1f, 0.1f, 0.15f));
-		DrawCircle(new Vector2(9, y0 - 7), 4f, new Color(0.1f, 0.1f, 0.15f));
-		DrawCircle(new Vector2(-9.5f, y0 - 10.5f), 2.5f, Colors.White);
-		DrawCircle(new Vector2(-6, y0 - 7), 1.3f, Colors.White);
-		DrawCircle(new Vector2(6.5f, y0 - 10.5f), 2.5f, Colors.White);
-		DrawCircle(new Vector2(10, y0 - 7), 1.3f, Colors.White);
-
-		// Happy mouth (wider)
-		DrawArc(new Vector2(-4, y0 + 4), 5, Mathf.Pi * 0.15f, Mathf.Pi * 0.55f, 8, new Color(0.2f, 0.2f, 0.2f), 1.5f);
-		DrawArc(new Vector2(4, y0 + 4), 5, Mathf.Pi * 0.45f, Mathf.Pi * 0.85f, 8, new Color(0.2f, 0.2f, 0.2f), 1.5f);
-
-		// Nose
-		DrawTriangle(new Vector2(-2.5f, y0 + 2), new Vector2(2.5f, y0 + 2), new Vector2(0, y0), new Color(1f, 0.55f, 0.6f));
-
-		// Blush
-		DrawCircle(new Vector2(-14, y0 - 3), 5f, new Color(1f, 0.5f, 0.5f, 0.3f));
-		DrawCircle(new Vector2(14, y0 - 3), 5f, new Color(1f, 0.5f, 0.5f, 0.3f));
-
-		// Whiskers
-		DrawLine(new Vector2(-6, y0 + 2), new Vector2(-22, y0), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1.5f);
-		DrawLine(new Vector2(-5, y0 + 3), new Vector2(-22, y0 + 6), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1.5f);
-		DrawLine(new Vector2(6, y0 + 2), new Vector2(22, y0), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1.5f);
-		DrawLine(new Vector2(5, y0 + 3), new Vector2(22, y0 + 6), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1.5f);
+		DrawArc(new Vector2(0, y - 4), 6, Mathf.Pi * 0.15f, Mathf.Pi * 0.85f, 8, Colors.Black, 1.5f);
+		DrawCircle(new Vector2(0, y - 5), 2f, new Color(1f, 0.5f, 0.55f));
+		DrawCircle(new Vector2(-12, y - 6), 4f, _blushColor);
+		DrawCircle(new Vector2(12, y - 6), 4f, _blushColor);
 	}
 
-	private void DrawSleepingCat(float y0, Font? font)
+	private void DrawSleeping(float y)
 	{
-		// Sleeping on side - oval body
-		DrawEllipse(new Vector2(0, y0 + 10), 28, 16, _bodyColor);
-		DrawEllipseOutline(new Vector2(0, y0 + 10), 28, 16, 20, Colors.White, 2f);
-
-		// Head tucked in
-		DrawCircle(new Vector2(18, y0 + 2), 12, _bodyColor);
-		DrawCircle(new Vector2(18, y0 + 2), 12, Colors.White, false, 2f);
-
-		// Tiny ears
-		DrawTriangle(new Vector2(22, y0 - 4), new Vector2(16, y0 - 12), new Vector2(14, y0 - 4), _bodyColor);
-		DrawTriangle(new Vector2(21, y0 - 5), new Vector2(17, y0 - 10), new Vector2(15, y0 - 5), new Color(1f, 0.75f, 0.8f));
-
-		// Closed happy eyes
-		DrawArc(new Vector2(16, y0), 0, Mathf.Pi, Mathf.Pi * 0.1f, 6, new Color(0.2f, 0.2f, 0.2f), 2f);
-		DrawArc(new Vector2(21, y0), 0, Mathf.Pi, Mathf.Pi * 0.1f, 6, new Color(0.2f, 0.2f, 0.2f), 2f);
-
-		// Tiny nose
-		DrawCircle(new Vector2(21, y0 + 4), 2f, new Color(1f, 0.55f, 0.6f));
-
-		// ZZZ
-		if (font != null)
-			DrawString(font, new Vector2(24, y0 - 20), "zZz", HorizontalAlignment.Left, 30, 14, new Color(0.6f, 0.6f, 0.8f, 0.7f));
-
-		// Tail curl
-		DrawThickCurve(new Vector2(-24, y0 + 12), new Vector2(-32, y0 + 6), new Vector2(-24, y0 - 2), _bodyColor.Darkened(0.03f), 4f);
+		DrawEllipse(new Vector2(0, y + 10), 24, 14, _bodyColor);
+		DrawEllipse(new Vector2(0, y + 10), 24, 14, _accentColor, false, 2f);
+		DrawCircle(new Vector2(16, y + 2), 10, _bodyColor);
+		DrawCircle(new Vector2(16, y + 2), 10, _accentColor, false, 1.5f);
+		Triangle(20, y - 2, 15, y - 10, 13, y - 2, _bodyColor);
+		DrawArc(new Vector2(14, y), 0, Mathf.Pi, Mathf.Pi * 0.1f, 5, Colors.Black, 2f);
+		DrawArc(new Vector2(19, y), 0, Mathf.Pi, Mathf.Pi * 0.1f, 5, Colors.Black, 2f);
+		DrawCircle(new Vector2(18, y + 4), 1.5f, new Color(1f, 0.5f, 0.55f));
+		var f = ThemeDB.FallbackFont;
+		if (f != null) DrawString(f, new Vector2(22, y - 16), "zZz", HorizontalAlignment.Left, 30, 12, new Color(0.5f, 0.5f, 0.7f, 0.6f));
 	}
 
-	private void DrawTriangle(Vector2 p1, Vector2 p2, Vector2 p3, Color color)
+	private void Triangle(float x1, float y1, float x2, float y2, float x3, float y3, Color c)
 	{
-		DrawColoredPolygon(new[] { p1, p2, p3 }, color);
+		DrawColoredPolygon(new[] { new Vector2(x1, y1), new Vector2(x2, y2), new Vector2(x3, y3) }, c);
 	}
 
-	private void DrawThickCurve(Vector2 p1, Vector2 ctrl, Vector2 p2, Color color, float width)
-	{
-		int segments = 12;
-		var pts = new Vector2[segments + 1];
-		for (int i = 0; i <= segments; i++)
-		{
-			float t = (float)i / segments;
-			float u = 1f - t;
-			pts[i] = u * u * p1 + 2f * u * t * ctrl + t * t * p2;
-		}
-		for (int i = 0; i < segments; i++)
-			DrawLine(pts[i], pts[i + 1], color, (int)width);
-		var tipPts = new Vector2[segments + 1];
-		float tipOffset = width * 0.6f;
-		for (int i = 0; i <= segments; i++)
-		{
-			float t = (float)i / segments;
-			Vector2 dir = 2f * ((1f - t) * (ctrl - p1) + t * (p2 - ctrl));
-			Vector2 perp = new Vector2(-dir.Y, dir.X).Normalized() * tipOffset;
-			tipPts[i] = pts[i] + perp;
-		}
-		for (int i = 0; i < segments; i++)
-			DrawLine(tipPts[i], tipPts[i + 1], color.Lightened(0.1f), (int)(width * 0.5f));
-	}
-
-	private void DrawEllipseOutline(Vector2 center, float rx, float ry, int segs, Color color, float width)
-	{
-		var pts = new Vector2[segs + 1];
-		for (int i = 0; i <= segs; i++)
-		{
-			float a = i * Mathf.Pi * 2f / segs;
-			pts[i] = center + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
-		}
-		for (int i = 0; i < segs; i++)
-			DrawLine(pts[i], pts[i + 1], color, width);
-	}
-
-	private void DrawBar(float x, float y, float w, float h, Color color)
-	{
-		DrawRect(new Rect2(x - 1, y - 1, w + 2, h + 2), new Color(0, 0, 0, 0.6f));
-		DrawRect(new Rect2(x, y, w, h), color);
-	}
-
-	private void DrawEllipse(Vector2 center, float rx, float ry, Color color)
+	private void DrawEllipse(Vector2 c, float rx, float ry, Color color, bool filled = true, float outline = 0)
 	{
 		if (rx <= 0 || ry <= 0) return;
-		DrawSetTransform(center, 0, new Vector2(rx, ry));
-		DrawCircle(Vector2.Zero, 1f, color);
+		DrawSetTransform(c, 0, new Vector2(rx, ry));
+		if (filled) DrawCircle(Vector2.Zero, 1f, color);
+		if (outline > 0) DrawArc(Vector2.Zero, 1f, 0, Mathf.Pi * 2, 32, color, outline, true);
 		DrawSetTransform(Vector2.Zero, 0, Vector2.One);
 	}
 
-	public static Color GetRarityColor(PetRarity rarity) => rarity switch
+	private void Bar(float x, float y, float w, float h, Color c)
 	{
-		PetRarity.Common => new Color(0.6f, 0.6f, 0.6f),
-		PetRarity.Rare => new Color(0.15f, 0.45f, 0.95f),
-		PetRarity.Epic => new Color(0.7f, 0.2f, 0.9f),
-		PetRarity.Legendary => new Color(1f, 0.6f, 0.02f),
-		_ => Colors.Gray
+		DrawRect(new Rect2(x - 1, y - 1, w + 2, h + 2), new Color(0, 0, 0, 0.5f));
+		DrawRect(new Rect2(x, y, w, h), c);
+	}
+
+	public static (Color Body, Color Accent) GetRarityColors(PetRarity r) => r switch
+	{
+		PetRarity.Common => (new Color(0.55f, 0.55f, 0.55f), Colors.White),
+		PetRarity.Rare => (new Color(0.15f, 0.45f, 0.9f), Colors.White),
+		PetRarity.Epic => (new Color(0.65f, 0.2f, 0.85f), Colors.White),
+		PetRarity.Legendary => (new Color(1f, 0.55f, 0.02f), new Color(1f, 0.9f, 0.5f)),
+		_ => (Colors.Gray, Colors.White)
 	};
 }

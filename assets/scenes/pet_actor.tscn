@@ -8,6 +8,10 @@ radius = 45.0
 [node name="PetActor" type="Node2D"]
 script = ExtResource("1_script")
 
+[node name="Sprite" type="Sprite2D" parent="."]
+visible = false
+hframes = 1
+
 [node name="ClickArea" type="Area2D" parent="."]
 input_pickable = true
 collision_layer = 1

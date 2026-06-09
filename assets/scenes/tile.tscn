@@ -8,8 +8,7 @@ radius = 32.0
 [node name="Tile" type="Node2D" unique_id=2031583688]
 script = ExtResource("2_script")
 
-[node name="CatTexture" type="TextureRect" parent="." unique_id=973540286]
-visible = false
+[node name="CatTexture" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(64, 64)
 offset_left = -32.0
 offset_top = -32.0
