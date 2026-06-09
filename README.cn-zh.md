@@ -10,10 +10,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/preview-0.10-1.jpg" width="45%" alt="标题画面">
-  <img src="docs/images/preview-0.10-2.jpg" width="45%" alt="游戏界面">
-  <img src="docs/images/preview-0.20-2.jpg" width="45%" alt="宠物收藏">
-  <img src="docs/images/preview-0.20-3.jpg" width="45%" alt="抽卡画面">
+  <img src="docs/images/preview-0.10-1.jpg" width="22.5%" alt="标题画面">
+  <img src="docs/images/preview-0.10-2.jpg" width="22.5%" alt="游戏界面">
+  <img src="docs/images/preview-0.20-2.jpg" width="22.5%" alt="宠物收藏">
+  <img src="docs/images/preview-0.20-3.jpg" width="22.5%" alt="抽卡画面">
 </p>
 
 ---
@@ -104,11 +104,11 @@ scripts/
 │   ├── ParticleController.cs
 │   └── ScreenShake.cs
 └── utils/
-    ├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
-    ├── Constants.cs   # 网格尺寸、动画时长
-    ├── GridUtils.cs   # 坐标转换 + 动态布局
-    ├── IDataSource.cs    # 通用数据源接口
-    └── IPersistentStorage.cs  # 存档接口
+	├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
+	├── Constants.cs   # 网格尺寸、动画时长
+	├── GridUtils.cs   # 坐标转换 + 动态布局
+	├── IDataSource.cs    # 通用数据源接口
+	└── IPersistentStorage.cs  # 存档接口
 ```
 
 ---

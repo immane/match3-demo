@@ -1,13 +1,13 @@
-[gd_resource type="Resource" script_class="PetDefinition" load_steps=2 format=3]
-[ext_resource type="Script" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+[gd_resource type="Resource" script_class="PetDefinition" format=3 uid="uid://dywna0djrh4m2"]
+
+[ext_resource type="Script" uid="uid://cgoyp1ftn5yvb" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+[ext_resource type="Script" uid="uid://d2v7xnwd0u16y" path="res://scripts/pets/data/PetAbilityDef.cs" id="1_fw8eo"]
+[ext_resource type="Script" uid="uid://ck3m30tmgqsqn" path="res://scripts/pets/data/EvolutionStep.cs" id="2_b5gis"]
 
 [resource]
 script = ExtResource("1")
 Id = "cat_playful_02"
 DisplayName = "Playful Cat"
-Type = 0
 Rarity = 1
-BaseLevel = 1
 MaxLevel = 40
-SpriteSheetPath = "res://assets/textures/pets/cat_2_sheet.png"
 Description = "Energetic little one, speeds up matching"

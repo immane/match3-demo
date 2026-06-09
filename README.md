@@ -10,10 +10,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/preview-0.10-1.jpg" width="45%" alt="Title Screen">
-  <img src="docs/images/preview-0.10-2.jpg" width="45%" alt="Gameplay">
-  <img src="docs/images/preview-0.20-2.jpg" width="45%" alt="Pet Collection">
-  <img src="docs/images/preview-0.20-3.jpg" width="45%" alt="Gacha Pull">
+  <img src="docs/images/preview-0.10-1.jpg" width="22.5%" alt="Title Screen">
+  <img src="docs/images/preview-0.10-2.jpg" width="22.5%" alt="Gameplay">
+  <img src="docs/images/preview-0.20-2.jpg" width="22.5%" alt="Pet Collection">
+  <img src="docs/images/preview-0.20-3.jpg" width="22.5%" alt="Gacha Pull">
 </p>
 
 ---
@@ -104,11 +104,11 @@ scripts/
 │   ├── ParticleController.cs
 │   └── ScreenShake.cs
 └── utils/
-    ├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
-    ├── Constants.cs   # Grid size, animation durations
-    ├── GridUtils.cs   # Coordinate conversion + dynamic layout
-    ├── IDataSource.cs    # Generic data source interface
-    └── IPersistentStorage.cs  # Save/load interface
+	├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
+	├── Constants.cs   # Grid size, animation durations
+	├── GridUtils.cs   # Coordinate conversion + dynamic layout
+	├── IDataSource.cs    # Generic data source interface
+	└── IPersistentStorage.cs  # Save/load interface
 ```
 
 ---
