@@ -78,5 +78,5 @@ horizontal_alignment = 1
 
 [node name="VersionLabel" type="Label" parent="VBoxContainer" unique_id=1194750547]
 layout_mode = 2
-text = "v0.1.0"
+text = "v0.2.0-alpha"
 horizontal_alignment = 1
