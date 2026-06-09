@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Match3Demo;
@@ -8,159 +9,260 @@ public partial class GachaBannerUI : Control
 {
 	[Export] public string DefaultBannerId { get; set; } = "standard_banner";
 
-	private Label _bannerNameLabel = null!;
-	private Label _pullsUntilGuaranteeLabel = null!;
-	private Label _costLabel = null!;
+	private Label _bannerName = null!;
+	private ProgressBar _pityBar = null!;
+	private Label _pityText = null!;
+	private Label _coinLabel = null!;
 	private Button _pullOnceBtn = null!;
 	private Button _pullMultiBtn = null!;
 	private Control _resultContainer = null!;
 
 	private GachaDrawService? _gachaService;
-	private IDataSource<GachaBanner>? _bannerDataSource;
-	private string _activeBannerId = "";
+	private IDataSource<GachaBanner>? _bannerDs;
+	private string _bid = "";
 
 	public override void _Ready()
 	{
-		_bannerNameLabel = GetNode<Label>("BannerPanel/BannerVBox/BannerNameLabel");
-		_pullsUntilGuaranteeLabel = GetNode<Label>("BannerPanel/BannerVBox/PityLabel");
-		_costLabel = GetNode<Label>("BannerPanel/BannerVBox/CostLabel");
-		_pullOnceBtn = GetNode<Button>("ButtonContainer/PullOnceBtn");
-		_pullMultiBtn = GetNode<Button>("ButtonContainer/PullMultiBtn");
+		_bannerName = GetNode<Label>("MainArea/BannerCard/BannerVBox/BannerName");
+		_pityBar = GetNode<ProgressBar>("MainArea/BannerCard/BannerVBox/PityRow/PityBar");
+		_pityText = GetNode<Label>("MainArea/BannerCard/BannerVBox/PityRow/PityText");
+		_coinLabel = GetNode<Label>("HeaderPanel/HeaderBox/CoinBadge/CoinLabel");
+		_pullOnceBtn = GetNode<Button>("ButtonArea/PullOnceBtn");
+		_pullMultiBtn = GetNode<Button>("ButtonArea/PullMultiBtn");
 		_resultContainer = GetNode<Control>("ResultContainer");
 
-		_pullOnceBtn.Pressed += OnPullOnce;
-		_pullMultiBtn.Pressed += OnPullMulti;
-		GetNode<Button>("CloseButton").Pressed += () =>
-		{
-			var m = GetNode("/root/Main") as Main;
-			m?.HideGachaUI();
-		};
+		// Style
+		StyleButton(_pullOnceBtn, new Color(0.15f, 0.4f, 0.85f));
+		StyleButton(_pullMultiBtn, new Color(0.75f, 0.25f, 0.85f));
+		var pityFill = new StyleBoxFlat { BgColor = new Color(1f, 0.6f, 0.05f) };
+		_pityBar.AddThemeStyleboxOverride("fill", pityFill);
+		_pityBar.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(0.15f, 0.15f, 0.15f) });
+
+		var headerPanel = GetNode<PanelContainer>("HeaderPanel");
+		var headerStyle = new StyleBoxFlat { BgColor = new Color(0.08f, 0.08f, 0.16f, 0.95f), CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12 };
+		headerPanel.AddThemeStyleboxOverride("panel", headerStyle);
+
+		_pullOnceBtn.Pressed += () => Pull(1);
+		_pullMultiBtn.Pressed += () => Pull(10);
+		GetNode<Button>("HeaderPanel/HeaderBox/CloseButton").Pressed += () =>
+			(GetNode("/root/Main") as Main)?.HideGachaUI();
 
 		_gachaService = ServiceInitializer.Instance?.GetService<GachaDrawService>();
-		_bannerDataSource = ServiceInitializer.Instance?.GetService<IDataSource<GachaBanner>>();
+		_bannerDs = ServiceInitializer.Instance?.GetService<IDataSource<GachaBanner>>();
 
-		// Fallback: create services directly if DI failed
 		if (_gachaService == null)
 		{
-			GD.Print("[GachaBannerUI] ServiceInitializer failed, creating fallback services");
-			var storage = new GodotFileStorage();
-			var currency = new CurrencyService(storage);
-			var roller = new GachaRollService();
-			var banners = new GachaBannerDataSource();
-			var petDs = new ResourcePetDataSource();
-			var pets = new PetCollectionService(petDs, EventBus.Instance, storage);
-			var pity = new GachaPityTracker(storage);
-			_gachaService = new GachaDrawService(currency, roller, banners, pets, EventBus.Instance, pity);
-			_bannerDataSource = banners;
+			var s = new GodotFileStorage();
+			var c = new CurrencyService(s);
+			var r = new GachaRollService();
+			var b = new GachaBannerDataSource();
+			var d = new ResourcePetDataSource();
+			var p = new PetCollectionService(d, EventBus.Instance, s);
+			var t = new GachaPityTracker(s);
+			_gachaService = new GachaDrawService(c, r, b, p, EventBus.Instance, t);
+			_bannerDs = b;
 		}
 
-		EventBus.Instance.GachaPullResult += OnPullResult;
-		EventBus.Instance.GachaMultiPullResult += OnMultiPullResult;
-		EventBus.Instance.CurrencyChanged += OnCurrencyChanged;
+		EventBus.Instance.GachaPullResult += OnResult;
+		EventBus.Instance.GachaMultiPullResult += OnMultiResult;
+		EventBus.Instance.CurrencyChanged += OnCoinChanged;
 
-		LoadBanner(DefaultBannerId);
+		Refresh();
 	}
 
 	public override void _ExitTree()
 	{
-		EventBus.Instance.GachaPullResult -= OnPullResult;
-		EventBus.Instance.GachaMultiPullResult -= OnMultiPullResult;
-		EventBus.Instance.CurrencyChanged -= OnCurrencyChanged;
+		EventBus.Instance.GachaPullResult -= OnResult;
+		EventBus.Instance.GachaMultiPullResult -= OnMultiResult;
+		EventBus.Instance.CurrencyChanged -= OnCoinChanged;
 	}
 
-	public void LoadBanner(string bannerId)
+	public void Refresh()
 	{
-		_activeBannerId = bannerId;
-		var banner = (_bannerDataSource as GachaBannerDataSource)?.GetOrCreateDefault(bannerId) ?? _bannerDataSource?.Get(bannerId);
+		var banner = (_bannerDs as GachaBannerDataSource)?.GetOrCreateDefault(DefaultBannerId) ?? _bannerDs?.Get(DefaultBannerId);
 		if (banner == null) return;
-		_bannerNameLabel.Text = banner.DisplayName;
-		_costLabel.Text = $"Cost: {banner.CostPerPull} coins";
+		_bid = banner.Id;
+		_bannerName.Text = banner.DisplayName;
+		UpdateCoin();
 		UpdatePity();
+	}
+
+	private void UpdateCoin()
+	{
+		var c = ServiceInitializer.Instance?.GetService<ICurrencyService>();
+		_coinLabel.Text = $"💰 {(c != null ? c.GetBalance("soft_currency") : 0)}";
 	}
 
 	private void UpdatePity()
 	{
-		int left = _gachaService?.GetPullsUntilGuarantee(_activeBannerId) ?? -1;
-		_pullsUntilGuaranteeLabel.Text = left > 0 ? $"Pulls until SSR: {left}" : "";
+		var b = _bannerDs?.Get(_bid);
+		if (b == null) return;
+		int left = _gachaService?.GetPullsUntilGuarantee(_bid) ?? 0;
+		float prog = 1f - (float)left / b.HardPityGuarantee;
+		_pityBar.Value = prog * b.HardPityGuarantee;
+		_pityText.Text = left > 0 ? $"SSR in {left} pulls" : "SSR guaranteed next!";
+		if (left <= 10) _pityText.AddThemeColorOverride("font_color", new Color(1f, 0.5f, 0));
 	}
 
-	private void OnPullOnce()
+	private void Pull(int count)
 	{
-		try { _gachaService?.PerformPull(_activeBannerId); }
-		catch (InvalidOperationException) { ShowError("Not enough coins!"); }
-		catch (Exception e) { ShowError(e.Message); }
+		try
+		{
+			if (count == 1) _gachaService?.PerformPull(_bid);
+			else _gachaService?.PerformMultiPull(_bid, count);
+		}
+		catch (InvalidOperationException) { FlashCoin(); }
+		catch (Exception e) { GD.PrintErr($"[Gacha] {e.Message}"); }
 	}
 
-	private void OnPullMulti()
+	private async void FlashCoin()
 	{
-		try { _gachaService?.PerformMultiPull(_activeBannerId, 10); }
-		catch (InvalidOperationException) { ShowError("Not enough coins!"); }
-		catch (Exception e) { ShowError(e.Message); }
+		_coinLabel.AddThemeColorOverride("font_color", Colors.Red);
+		await ToSignal(GetTree().CreateTimer(1.5), SceneTreeTimer.SignalName.Timeout);
+		UpdateCoin();
 	}
 
-	private async void ShowError(string msg)
+	private async void OnResult(string rewardId, int rarity, Godot.Collections.Dictionary pity)
 	{
-		_costLabel.Text = msg;
-		_costLabel.AddThemeColorOverride("font_color", Colors.Red);
-		await ToSignal(GetTree().CreateTimer(2.0), SceneTreeTimer.SignalName.Timeout);
-		LoadBanner(_activeBannerId);
-	}
-
-	private async void OnPullResult(string rewardId, int rarity, Godot.Collections.Dictionary pity)
-	{
-		_pullOnceBtn.Disabled = true;
-		_pullMultiBtn.Disabled = true;
-		await PlayAnim(rewardId, (PetRarity)rarity);
-		_pullOnceBtn.Disabled = false;
-		_pullMultiBtn.Disabled = false;
+		SetButtons(false);
+		await ShowCard(rewardId, (PetRarity)rarity, false);
+		SetButtons(true);
 		UpdatePity();
+		UpdateCoin();
 	}
 
-	private async void OnMultiPullResult(Godot.Collections.Array results)
+	private async void OnMultiResult(Godot.Collections.Array results)
 	{
-		_pullOnceBtn.Disabled = true;
-		_pullMultiBtn.Disabled = true;
+		SetButtons(false);
 		foreach (Godot.Collections.Dictionary r in results)
 		{
-			await PlayAnim((string)r["rewardId"], (PetRarity)(int)r["rarity"]);
-			await ToSignal(GetTree().CreateTimer(0.25), SceneTreeTimer.SignalName.Timeout);
+			var id = (string)r["rewardId"];
+			var rarity = (PetRarity)(int)r["rarity"];
+			bool skip = results.IndexOf(r) < results.Count - 1;
+			await ShowCard(id, rarity, skip);
 		}
-		_pullOnceBtn.Disabled = false;
-		_pullMultiBtn.Disabled = false;
+		SetButtons(true);
 		UpdatePity();
+		UpdateCoin();
 	}
 
-	private async Task PlayAnim(string rewardId, PetRarity rarity)
+	private void SetButtons(bool enabled)
 	{
-		var card = new ColorRect();
-		card.Color = rarity switch
+		_pullOnceBtn.Disabled = !enabled;
+		_pullMultiBtn.Disabled = !enabled;
+	}
+
+	private async Task ShowCard(string rewardId, PetRarity rarity, bool fast)
+	{
+		var colors = new Dictionary<PetRarity, Color>
 		{
-			PetRarity.Common => new Color(0.4f, 0.4f, 0.4f),
-			PetRarity.Rare => new Color(0.15f, 0.35f, 0.9f),
-			PetRarity.Epic => new Color(0.6f, 0.15f, 0.9f),
-			PetRarity.Legendary => new Color(1f, 0.55f, 0.02f),
-			_ => Colors.Gray
+			[PetRarity.Common] = new(0.4f, 0.4f, 0.4f),
+			[PetRarity.Rare] = new(0.15f, 0.38f, 0.9f),
+			[PetRarity.Epic] = new(0.65f, 0.15f, 0.9f),
+			[PetRarity.Legendary] = new(1f, 0.5f, 0.02f),
 		};
-		card.Size = new Vector2(240, 320);
-		card.Position = new Vector2((Size.X - 240) / 2, (Size.Y - 320) / 2);
+
+		var bg = new ColorRect();
+		bg.Color = new Color(0, 0, 0, 0.7f);
+		bg.Size = Size;
+		_resultContainer.AddChild(bg);
+
+		var card = new PanelContainer();
+		card.Size = new Vector2(260, 340);
+		card.Position = new Vector2((Size.X - 260) / 2, (Size.Y - 340) / 2 - 40);
+		card.PivotOffset = new Vector2(130, 170);
 		card.Scale = Vector2.Zero;
+		card.Modulate = Colors.Transparent;
 		_resultContainer.AddChild(card);
 
-		var label = new Label();
-		label.Text = $"{rarity}\n{rewardId}";
-		label.HorizontalAlignment = HorizontalAlignment.Center;
-		label.VerticalAlignment = VerticalAlignment.Center;
-		label.Size = card.Size;
-		label.AddThemeColorOverride("font_color", Colors.White);
-		label.AddThemeFontSizeOverride("font_size", 22);
-		card.AddChild(label);
+		var glow = new ColorRect();
+		glow.Color = colors[rarity];
+		glow.Size = new Vector2(268, 348);
+		glow.Position = new Vector2(-4, -4);
+		card.AddChild(glow);
 
+		var inner = new ColorRect();
+		inner.Color = new Color(0.12f, 0.12f, 0.18f);
+		inner.Size = new Vector2(260, 340);
+		card.AddChild(inner);
+
+		var vbox = new VBoxContainer();
+		vbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		vbox.Alignment = BoxContainer.AlignmentMode.Center;
+		vbox.AddThemeConstantOverride("separation", 8);
+		card.AddChild(vbox);
+
+		var stars = rarity switch
+		{
+			PetRarity.Legendary => "★★★★★",
+			PetRarity.Epic => "★★★★",
+			PetRarity.Rare => "★★★",
+			_ => "★★"
+		};
+		var starLabel = new Label();
+		starLabel.Text = stars;
+		starLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		starLabel.AddThemeFontSizeOverride("font_size", 28);
+		starLabel.AddThemeColorOverride("font_color", colors[rarity]);
+		vbox.AddChild(starLabel);
+
+		var nameLabel = new Label();
+		nameLabel.Text = rewardId.Replace("_", " ");
+		nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		nameLabel.AddThemeFontSizeOverride("font_size", 20);
+		nameLabel.AddThemeColorOverride("font_color", Colors.White);
+		vbox.AddChild(nameLabel);
+
+		var rarityLabel = new Label();
+		rarityLabel.Text = rarity.ToString().ToUpper();
+		rarityLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		rarityLabel.AddThemeFontSizeOverride("font_size", 16);
+		rarityLabel.AddThemeColorOverride("font_color", colors[rarity]);
+		vbox.AddChild(rarityLabel);
+
+		// Animate
 		var t = CreateTween();
-		t.TweenProperty(card, "scale", Vector2.One, 0.4f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		t.SetParallel(true);
+		t.TweenProperty(bg, "modulate:a", 1f, 0.2f).From(0);
+		t.TweenProperty(card, "modulate:a", 1f, 0.3f);
+		t.TweenProperty(card, "scale", new Vector2(1.05f, 1.05f), 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		t.TweenProperty(card, "position:y", card.Position.Y - 20, 0.35f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 		await ToSignal(t, Tween.SignalName.Finished);
-		await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+
+		if (!fast)
+		{
+			var settle = CreateTween();
+			settle.TweenProperty(card, "scale", Vector2.One, 0.15f);
+			await ToSignal(settle, Tween.SignalName.Finished);
+			await ToSignal(GetTree().CreateTimer(1.2), SceneTreeTimer.SignalName.Timeout);
+		}
+		else
+		{
+			await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
+		}
+
+		t = CreateTween();
+		t.SetParallel(true);
+		t.TweenProperty(bg, "modulate:a", 0f, 0.2f);
+		t.TweenProperty(card, "modulate", Colors.Transparent, 0.15f);
+		await ToSignal(t, Tween.SignalName.Finished);
+		bg.QueueFree();
 		card.QueueFree();
 	}
 
-	private void OnCurrencyChanged(string currencyId, int newBalance, int delta) => UpdatePity();
+	private void OnCoinChanged(string id, int balance, int delta) => UpdateCoin();
+
+	private static void StyleButton(Button btn, Color bg)
+	{
+		var normal = new StyleBoxFlat { BgColor = bg, CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12, CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12 };
+		var hover = new StyleBoxFlat { BgColor = bg.Lightened(0.15f), CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12, CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12 };
+		var pressed = new StyleBoxFlat { BgColor = bg.Darkened(0.15f), CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12, CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12 };
+		btn.AddThemeStyleboxOverride("normal", normal);
+		btn.AddThemeStyleboxOverride("hover", hover);
+		btn.AddThemeStyleboxOverride("pressed", pressed);
+		btn.AddThemeColorOverride("font_color", Colors.White);
+		btn.AddThemeColorOverride("font_hover_color", Colors.White);
+		var disabled = new StyleBoxFlat { BgColor = new Color(0.3f, 0.3f, 0.3f), CornerRadiusTopLeft = 12, CornerRadiusTopRight = 12, CornerRadiusBottomLeft = 12, CornerRadiusBottomRight = 12 };
+		btn.AddThemeStyleboxOverride("disabled", disabled);
+	}
 }
