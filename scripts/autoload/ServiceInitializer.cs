@@ -39,7 +39,7 @@ public partial class ServiceInitializer : Node
         var petDataSource = new ResourcePetDataSource("res://data/pets/");
         _registry.Register<IPetDataSource>(petDataSource);
 
-        PetCollectionService = new PetCollectionService(petDataSource, (IPetEventBus)EventBus.Instance, FileStorage);
+        PetCollectionService = new PetCollectionService(petDataSource, EventBus.Instance, FileStorage);
         _registry.Register<IPetCollectionService>(PetCollectionService);
 
         GachaRollService = new GachaRollService();

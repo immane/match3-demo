@@ -9,11 +9,11 @@ namespace Match3Demo;
 public class PetCollectionService : IPetCollectionService
 {
     private readonly IPetDataSource _dataSource;
-    private readonly IPetEventBus _eventBus;
+    private readonly EventBus _eventBus;
     private readonly IPersistentStorage? _storage;
     private PetCollection _collection = new();
 
-    public PetCollectionService(IPetDataSource dataSource, IPetEventBus eventBus, IPersistentStorage? storage = null)
+    public PetCollectionService(IPetDataSource dataSource, EventBus eventBus, IPersistentStorage? storage = null)
     {
         _dataSource = dataSource;
         _eventBus = eventBus;
@@ -23,7 +23,7 @@ public class PetCollectionService : IPetCollectionService
     public PetInstance AddPet(string petDefId)
     {
         var pet = _collection.AddPet(petDefId);
-        _eventBus.EmitPetAcquired(petDefId);
+        _eventBus.EmitSignal(EventBus.SignalName.PetAcquired, petDefId);
         _ = SaveIfAvailable();
         return pet;
     }
@@ -60,7 +60,7 @@ public class PetCollectionService : IPetCollectionService
         int levelsGained = PetLevelCalculator.LevelUp(pet, def);
         if (levelsGained > 0)
         {
-            _eventBus.EmitPetLeveledUp(petInstanceId, pet.Level);
+            _eventBus.EmitSignal(EventBus.SignalName.PetLeveledUp, petInstanceId, pet.Level);
         }
         _ = SaveIfAvailable();
         return levelsGained;
@@ -84,7 +84,7 @@ public class PetCollectionService : IPetCollectionService
                 pet.PetDefId = step.EvolvesToDefId;
                 pet.Level = 1;
                 pet.CurrentXP = 0;
-                _eventBus.EmitPetEvolved(petInstanceId, step.EvolvesToDefId);
+                _eventBus.EmitSignal(EventBus.SignalName.PetEvolved, petInstanceId, step.EvolvesToDefId);
                 _ = SaveIfAvailable();
                 return true;
             }
@@ -113,7 +113,7 @@ public class PetCollectionService : IPetCollectionService
         var pet = _collection.GetPet(petInstanceId);
         if (pet == null) return false;
         _collection.ActivePetId = petInstanceId;
-        _eventBus.EmitActivePetChanged(petInstanceId);
+        _eventBus.EmitSignal(EventBus.SignalName.ActivePetChanged, petInstanceId);
         return true;
     }
 

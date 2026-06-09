@@ -1,3 +1,4 @@
+using Godot;
 using System;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ public class GachaDrawService
     private readonly GachaRollService _roller;
     private readonly IDataSource<GachaBanner> _banners;
     private readonly IPetCollectionService _petCollection;
-    private readonly IGachaEventBus _eventBus;
+    private readonly EventBus _eventBus;
     private readonly GachaPityTracker _pityTracker;
 
     public GachaDrawService(
@@ -17,7 +18,7 @@ public class GachaDrawService
         GachaRollService roller,
         IDataSource<GachaBanner> banners,
         IPetCollectionService petCollection,
-        IGachaEventBus eventBus,
+        EventBus eventBus,
         GachaPityTracker pityTracker)
     {
         _currency = currency;
@@ -37,7 +38,7 @@ public class GachaDrawService
         if (!_currency.Spend("soft_currency", banner.CostPerPull, $"gacha_pull_{bannerId}"))
             throw new InvalidOperationException($"Insufficient currency for {bannerId}");
 
-        _eventBus.EmitGachaBeforePull(bannerId);
+        _eventBus.EmitSignal(EventBus.SignalName.GachaBeforePull, bannerId);
 
         var pity = _pityTracker.GetPityState(bannerId);
         var result = _roller.Roll(banner, pity);
@@ -59,7 +60,7 @@ public class GachaDrawService
         if (!_currency.Spend("soft_currency", totalCost, $"gacha_multipull_{bannerId}_{count}"))
             throw new InvalidOperationException($"Insufficient currency for {count}x {bannerId}");
 
-        _eventBus.EmitGachaBeforePull(bannerId);
+        _eventBus.EmitSignal(EventBus.SignalName.GachaBeforePull, bannerId);
 
         var pity = _pityTracker.GetPityState(bannerId);
         var results = _roller.RollMultiple(banner, pity, count);
@@ -70,8 +71,17 @@ public class GachaDrawService
         foreach (var result in results)
             GrantReward(result);
 
-        _eventBus.EmitGachaMultiPullResult(results);
-
+        var arr = new Godot.Collections.Array();
+        foreach (var r in results)
+        {
+            arr.Add(new Godot.Collections.Dictionary
+            {
+                ["rewardId"] = r.RewardId,
+                ["type"] = (int)r.Type,
+                ["rarity"] = (int)r.Rarity
+            });
+        }
+        _eventBus.EmitSignal(EventBus.SignalName.GachaMultiPullResult, arr);
         return results;
     }
 
@@ -91,6 +101,12 @@ public class GachaDrawService
 
     private void EmitPullResult(GachaRollResult result)
     {
-        _eventBus.EmitGachaPullResult(result.RewardId, (int)result.Rarity);
+        var pityDict = new Godot.Collections.Dictionary
+        {
+            ["totalPulls"] = result.NewPityState.TotalPulls,
+            ["pullsSinceLastSSR"] = result.NewPityState.PullsSinceLastSSR,
+            ["guaranteedRateUp"] = result.NewPityState.GuaranteedRateUpNext
+        };
+        _eventBus.EmitSignal(EventBus.SignalName.GachaPullResult, result.RewardId, (int)result.Rarity, pityDict);
     }
 }
