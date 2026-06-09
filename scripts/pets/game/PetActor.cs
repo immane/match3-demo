@@ -8,12 +8,7 @@ public enum PetMood { Walking, Idle, Sitting, Sleeping }
 public partial class PetActor : Node2D
 {
 	private string _displayName = "";
-	private PetRarity _rarity;
 	private PetNeeds? _needs;
-	private Color _bodyColor = Colors.Gray;
-	private Color _accentColor = Colors.White;
-	private Color _earInner = new(1f, 0.7f, 0.75f);
-	private Color _blushColor = new(1f, 0.5f, 0.5f, 0.25f);
 	private bool _showBars;
 	private PetMood _mood = PetMood.Idle;
 	private float _moodTimer;
@@ -26,7 +21,32 @@ public partial class PetActor : Node2D
 	private Vector2 _areaMax;
 	private System.Random _rng = new();
 	private Sprite2D? _sprite;
-	private bool _hasSprite;
+	private bool _hasSheet;
+	private float _sheetTimer;
+
+	private const int SP_COLS = 3;
+	private const int SP_ROWS = 3;
+	private static readonly int[] SP_X = { 0, 341, 682 };
+	private static readonly int[] SP_Y = { 0, 341, 682 };
+	private static readonly int[] SP_W = { 341, 341, 342 };
+	private static readonly int[] SP_H = { 341, 341, 342 };
+
+	private static readonly int[][] MOOD_CELLS = {
+		new[] { 1, 2 },      // Walking: happy, excited
+		new[] { 0, 8 },      // Idle: neutral, blink
+		new[] { 4 },         // Sitting
+		new[] { 7 },         // Sleeping
+	};
+
+	private static readonly System.Collections.Generic.Dictionary<string, string> SHEET_PATH_MAP = new()
+	{
+		["cat_sleepy_01"] = "res://assets/textures/pets/cat_1_sheet.png",
+		["cat_playful_02"] = "res://assets/textures/pets/cat_2_sheet.png",
+		["dog_common_01"] = "res://assets/textures/pets/dog_1_sheet.png",
+		["dog_happy_01"] = "res://assets/textures/pets/dog_1_sheet.png",
+		["bunny_rare_01"] = "res://assets/textures/pets/bunny_1_sheet.png",
+		["duck_common_01"] = "res://assets/textures/pets/duck_1_sheet.png",
+	};
 
 	[Signal] public delegate void PetClickedEventHandler(InputEvent inputEvent);
 	public PetInstance? PetInstance { get; set; }
@@ -35,69 +55,42 @@ public partial class PetActor : Node2D
 	public override void _Ready()
 	{
 		ZIndex = 100;
-		Scale = new Vector2(1.5f, 1.5f);
-		_sprite = GetNodeOrNull<Sprite2D>("Sprite");
-		_hasSprite = _sprite != null;
+		Scale = new Vector2(1.0f, 1.0f);
+		_sprite ??= GetNodeOrNull<Sprite2D>("Sprite");
 		PickMood();
 	}
 
 	public void Setup(PetInstance pet, PetDefinition def, bool showBars = true)
 	{
 		_displayName = !string.IsNullOrEmpty(pet.Nickname) ? pet.Nickname : def.DisplayName;
-		_rarity = def.Rarity;
 		_needs = pet.Needs;
 		_showBars = showBars;
 		PetInstance = pet;
 		PetDef = def;
+		_hasSheet = false;
 
-		(_bodyColor, _accentColor) = GetRarityColors(_rarity);
+		_sprite ??= GetNodeOrNull<Sprite2D>("Sprite");
 
 		if (_sprite != null)
 		{
-			if (def.SpriteSheet != null)
+			var sheet = def.SpriteSheet ?? LoadSheetForPet(def.Id, def.SpriteSheetPath);
+			GD.Print($"[PetActor] Setup pet={def.Id} sprite={_sprite != null} sheet={sheet != null} sprite_node={_sprite}");
+			if (sheet != null)
 			{
-				_sprite.Texture = def.SpriteSheet;
-				_sprite.Hframes = Math.Max(1, def.FrameCount);
-				_hasSprite = true;
+				_sprite.Texture = sheet;
+				_sprite.RegionEnabled = true;
+				_sprite.RegionRect = GetCellRect(0);
+				_sprite.Visible = true;
+				_hasSheet = true;
 			}
 			else
 			{
-				// Use existing cute cat SVGs as fallback
-				var tex = LoadPetTexture(def.Type, _rarity);
-				if (tex != null)
-				{
-					_sprite.Texture = tex;
-					_sprite.Hframes = 1;
-					_sprite.RegionEnabled = false;
-					_hasSprite = true;
-				}
-				else
-				{
-					_hasSprite = false;
-				}
+				_sprite.Texture = null;
+				_sprite.RegionEnabled = false;
+				_sprite.Visible = false;
 			}
-			_sprite.Visible = _hasSprite;
 		}
 		QueueRedraw();
-	}
-
-	private static readonly string[][] PetTexturePaths = new[]
-	{
-		new[] { "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_yellow.svg" },
-		new[] { "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_red.svg" },
-		new[] { "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_purple.svg" },
-		new[] { "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_blue.svg" },
-		new[] { "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_green.svg" },
-		new[] { "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_yellow.svg" },
-	};
-
-	private static Texture2D? LoadPetTexture(PetType type, PetRarity rarity)
-	{
-		int t = (int)type;
-		int r = (int)rarity;
-		if (t >= 0 && t < PetTexturePaths.Length && r >= 0 && r < PetTexturePaths[t].Length)
-			return GD.Load<Texture2D>(PetTexturePaths[t][r]);
-		return GD.Load<Texture2D>("res://assets/textures/cats/cat_red.svg");
 	}
 
 	public void SetWalkArea(Vector2 min, Vector2 max) { _areaMin = min; _areaMax = max; }
@@ -123,10 +116,64 @@ public partial class PetActor : Node2D
 				break;
 		}
 
-		if (_hasSprite && _sprite != null && _sprite.Hframes > 1 && _mood == PetMood.Walking)
-			_sprite.Frame = (int)(_animTime * 6f) % _sprite.Hframes;
+		if (_hasSheet && _sprite != null)
+		{
+			int cell = GetSheetCell(dt);
+			_sprite.RegionRect = GetCellRect(cell);
+			if (_mood == PetMood.Walking)
+				_sprite.FlipH = _targetPos.X < Position.X;
+		}
 
 		QueueRedraw();
+	}
+
+	private const int SP_INSET = 3;
+	private const int SP_BOTTOM_CROP = 37;
+
+	private static Rect2 GetCellRect(int index)
+	{
+		int col = index % SP_COLS;
+		int row = index / SP_COLS;
+		return new Rect2(
+			SP_X[col] + SP_INSET,
+			SP_Y[row] + SP_INSET,
+			SP_W[col] - SP_INSET * 2,
+			SP_H[row] - SP_INSET * 2 - SP_BOTTOM_CROP);
+	}
+
+	private int GetSheetCell(float dt)
+	{
+		switch (_mood)
+		{
+			case PetMood.Walking:
+				_sheetTimer += dt;
+				return ((int)(_sheetTimer * 6f) % 2) == 0 ? MOOD_CELLS[0][0] : MOOD_CELLS[0][1];
+			case PetMood.Idle:
+				return Mathf.Sin(_animTime * 0.7f) > 0.75f ? MOOD_CELLS[1][1] : MOOD_CELLS[1][0];
+			default:
+				return MOOD_CELLS[(int)_mood][0];
+		}
+	}
+
+	private static Texture2D? LoadSheetForPet(string petId, string pathFromDef)
+	{
+		if (SHEET_PATH_MAP.TryGetValue(petId, out var path))
+			return LoadTexture(path);
+		if (!string.IsNullOrEmpty(pathFromDef))
+			return LoadTexture(pathFromDef);
+		return null;
+	}
+
+	private static Texture2D? LoadTexture(string path)
+	{
+		if (!ResourceLoader.Exists(path))
+		{
+			GD.PrintErr($"[PetActor] Resource not found: {path}");
+			return null;
+		}
+		var tex = GD.Load<Texture2D>(path);
+		GD.Print($"[PetActor] Loaded texture: {path} -> {(tex != null ? "OK" : "FAIL")}");
+		return tex;
 	}
 
 	private void PickMood()
@@ -153,134 +200,28 @@ public partial class PetActor : Node2D
 
 	public override void _Draw()
 	{
-		if (_hasSprite) return;
-		float y = _bobY;
+		if (!_hasSheet) return;
+		DrawHUD();
+	}
+
+	private void DrawHUD()
+	{
+		float baseY = 185f;
 		var font = ThemeDB.FallbackFont;
-
-		if (_mood == PetMood.Sleeping) DrawSleeping(y);
-		else if (_mood == PetMood.Sitting) DrawSitting(y);
-		else DrawStanding(y);
-
 		if (font != null)
 		{
-			float ny = _mood == PetMood.Sleeping ? y - 20 : (_mood == PetMood.Sitting ? y - 32 : y - 38);
-			DrawString(font, new Vector2(-50, ny), _displayName, HorizontalAlignment.Center, 100, 14, Colors.White);
+			DrawString(font, new Vector2(-50, baseY), _displayName, HorizontalAlignment.Center, 100, 14, Colors.White);
 		}
-
 		if (_showBars && _needs != null)
 		{
-			float by = _mood == PetMood.Sleeping ? y - 32 : (_mood == PetMood.Sitting ? y - 44 : y - 50);
-			float w = 56, h = 4, bx = -w / 2f;
-			Bar(bx, by, w * _needs.Hunger / PetNeeds.MaxValue, h, new Color(1f, 0.3f, 0.1f));
-			Bar(bx, by + 6, w * _needs.Happiness / PetNeeds.MaxValue, h, new Color(1f, 0.65f, 0.1f));
-			Bar(bx, by + 12, w * _needs.Energy / PetNeeds.MaxValue, h, new Color(0.2f, 0.6f, 1f));
+			float by = baseY + 16;
+			float avg = (_needs.Hunger + _needs.Happiness + _needs.Energy) / (PetNeeds.MaxValue * 3f);
+			float w = 64, h = 5, bx = -w / 2f;
+			DrawRect(new Rect2(bx - 1, by - 1, w + 2, h + 2), new Color(0, 0, 0, 0.5f));
+			Color barColor = avg > 0.6f ? new Color(0.2f, 0.75f, 0.35f)
+				: avg > 0.3f ? new Color(1f, 0.7f, 0.1f)
+				: new Color(1f, 0.3f, 0.1f);
+			DrawRect(new Rect2(bx, by, w * avg, h), barColor);
 		}
 	}
-
-	private void DrawStanding(float y)
-	{
-		float r = 22f;
-		DrawEllipse(new Vector2(0, y + r + 4), r * 1.1f, 5f, new Color(0, 0, 0, 0.1f));
-		DrawCircle(new Vector2(0, y + 6), r - 2, _bodyColor);
-		DrawCircle(new Vector2(0, y + 6), r - 2, _accentColor, false, 2f);
-		DrawCircle(new Vector2(0, y - 8), r - 2, _bodyColor);
-		DrawCircle(new Vector2(0, y - 8), r - 2, _accentColor, false, 2f);
-
-		Triangle(-16, y - 22, -8, y - 30, -3, y - 20, _bodyColor);
-		Triangle(16, y - 22, 8, y - 30, 3, y - 20, _bodyColor);
-		Triangle(-13, y - 23, -9, y - 27, -5, y - 21, _earInner);
-		Triangle(13, y - 23, 9, y - 27, 5, y - 21, _earInner);
-
-		DrawCircle(new Vector2(-7, y - 10), 5.5f, Colors.White);
-		DrawCircle(new Vector2(7, y - 10), 5.5f, Colors.White);
-		DrawCircle(new Vector2(-6, y - 9), 3f, Colors.Black);
-		DrawCircle(new Vector2(8, y - 9), 3f, Colors.Black);
-		DrawCircle(new Vector2(-8, y - 12), 1.8f, Colors.White);
-		DrawCircle(new Vector2(6, y - 12), 1.8f, Colors.White);
-
-		DrawCircle(new Vector2(0, y - 3), 2f, new Color(1f, 0.5f, 0.55f));
-		DrawLine(new Vector2(0, y - 1), new Vector2(-3, y + 2), new Color(0.3f, 0.3f, 0.3f), 1.5f);
-		DrawLine(new Vector2(0, y - 1), new Vector2(3, y + 2), new Color(0.3f, 0.3f, 0.3f), 1.5f);
-
-		DrawCircle(new Vector2(-12, y - 6), 3.5f, _blushColor);
-		DrawCircle(new Vector2(12, y - 6), 3.5f, _blushColor);
-
-		DrawLine(new Vector2(-5, y - 2), new Vector2(-18, y - 4), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
-		DrawLine(new Vector2(-5, y - 1), new Vector2(-18, y + 1), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
-		DrawLine(new Vector2(5, y - 2), new Vector2(18, y - 4), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
-		DrawLine(new Vector2(5, y - 1), new Vector2(18, y + 1), new Color(0.5f, 0.5f, 0.5f, 0.5f), 1f);
-
-		float lx = _mood == PetMood.Walking ? Mathf.Sin(_animTime * 10f) * 3f : 0;
-		DrawLine(new Vector2(-6, y + 18), new Vector2(-6 + lx, y + 24), _bodyColor.Darkened(0.1f), 4f);
-		DrawLine(new Vector2(6, y + 18), new Vector2(6 - lx, y + 24), _bodyColor.Darkened(0.1f), 4f);
-	}
-
-	private void DrawSitting(float y)
-	{
-		float r = 22f;
-		DrawCircle(new Vector2(0, y + 8), r, _bodyColor);
-		DrawCircle(new Vector2(0, y + 8), r, _accentColor, false, 2f);
-		DrawCircle(new Vector2(0, y - 8), r - 2, _bodyColor);
-		DrawCircle(new Vector2(0, y - 8), r - 2, _accentColor, false, 2f);
-
-		Triangle(-16, y - 24, -8, y - 32, -3, y - 20, _bodyColor);
-		Triangle(16, y - 24, 8, y - 32, 3, y - 20, _bodyColor);
-		Triangle(-13, y - 25, -9, y - 29, -5, y - 21, _earInner);
-		Triangle(13, y - 25, 9, y - 29, 5, y - 21, _earInner);
-
-		DrawCircle(new Vector2(-7, y - 10), 6f, Colors.White);
-		DrawCircle(new Vector2(7, y - 10), 6f, Colors.White);
-		DrawCircle(new Vector2(-6, y - 9), 3.5f, Colors.Black);
-		DrawCircle(new Vector2(8, y - 9), 3.5f, Colors.Black);
-		DrawCircle(new Vector2(-8, y - 12), 2.2f, Colors.White);
-		DrawCircle(new Vector2(6, y - 12), 2.2f, Colors.White);
-
-		DrawArc(new Vector2(0, y - 4), 6, Mathf.Pi * 0.15f, Mathf.Pi * 0.85f, 8, Colors.Black, 1.5f);
-		DrawCircle(new Vector2(0, y - 5), 2f, new Color(1f, 0.5f, 0.55f));
-		DrawCircle(new Vector2(-12, y - 6), 4f, _blushColor);
-		DrawCircle(new Vector2(12, y - 6), 4f, _blushColor);
-	}
-
-	private void DrawSleeping(float y)
-	{
-		DrawEllipse(new Vector2(0, y + 10), 24, 14, _bodyColor);
-		DrawEllipse(new Vector2(0, y + 10), 24, 14, _accentColor, false, 2f);
-		DrawCircle(new Vector2(16, y + 2), 10, _bodyColor);
-		DrawCircle(new Vector2(16, y + 2), 10, _accentColor, false, 1.5f);
-		Triangle(20, y - 2, 15, y - 10, 13, y - 2, _bodyColor);
-		DrawArc(new Vector2(14, y), 0, Mathf.Pi, Mathf.Pi * 0.1f, 5, Colors.Black, 2f);
-		DrawArc(new Vector2(19, y), 0, Mathf.Pi, Mathf.Pi * 0.1f, 5, Colors.Black, 2f);
-		DrawCircle(new Vector2(18, y + 4), 1.5f, new Color(1f, 0.5f, 0.55f));
-		var f = ThemeDB.FallbackFont;
-		if (f != null) DrawString(f, new Vector2(22, y - 16), "zZz", HorizontalAlignment.Left, 30, 12, new Color(0.5f, 0.5f, 0.7f, 0.6f));
-	}
-
-	private void Triangle(float x1, float y1, float x2, float y2, float x3, float y3, Color c)
-	{
-		DrawColoredPolygon(new[] { new Vector2(x1, y1), new Vector2(x2, y2), new Vector2(x3, y3) }, c);
-	}
-
-	private void DrawEllipse(Vector2 c, float rx, float ry, Color color, bool filled = true, float outline = 0)
-	{
-		if (rx <= 0 || ry <= 0) return;
-		DrawSetTransform(c, 0, new Vector2(rx, ry));
-		if (filled) DrawCircle(Vector2.Zero, 1f, color);
-		if (outline > 0) DrawArc(Vector2.Zero, 1f, 0, Mathf.Pi * 2, 32, color, outline, true);
-		DrawSetTransform(Vector2.Zero, 0, Vector2.One);
-	}
-
-	private void Bar(float x, float y, float w, float h, Color c)
-	{
-		DrawRect(new Rect2(x - 1, y - 1, w + 2, h + 2), new Color(0, 0, 0, 0.5f));
-		DrawRect(new Rect2(x, y, w, h), c);
-	}
-
-	public static (Color Body, Color Accent) GetRarityColors(PetRarity r) => r switch
-	{
-		PetRarity.Common => (new Color(0.55f, 0.55f, 0.55f), Colors.White),
-		PetRarity.Rare => (new Color(0.15f, 0.45f, 0.9f), Colors.White),
-		PetRarity.Epic => (new Color(0.65f, 0.2f, 0.85f), Colors.White),
-		PetRarity.Legendary => (new Color(1f, 0.55f, 0.02f), new Color(1f, 0.9f, 0.5f)),
-		_ => (Colors.Gray, Colors.White)
-	};
 }

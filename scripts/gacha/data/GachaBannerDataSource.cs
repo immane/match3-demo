@@ -13,7 +13,11 @@ public class GachaBannerDataSource : IDataSource<GachaBanner>
         if (_cache.TryGetValue(id, out var banner))
             return banner;
 
-        var res = GD.Load<GachaBannerResource>($"res://data/gacha/{id}.tres");
+        var path = $"res://data/gacha/{id}.tres";
+        if (!ResourceLoader.Exists(path))
+            return null;
+
+        var res = GD.Load<GachaBannerResource>(path);
         if (res != null)
         {
             banner = res.ToBanner();
@@ -52,7 +56,14 @@ public class GachaBannerDataSource : IDataSource<GachaBanner>
                 var id = fileName.Replace(".tres", "");
                 if (!_cache.ContainsKey(id))
                 {
-                    var res = GD.Load<GachaBannerResource>($"res://data/gacha/{fileName}");
+                    var path = $"res://data/gacha/{fileName}";
+                    if (!ResourceLoader.Exists(path))
+                    {
+                        fileName = dir.GetNext();
+                        continue;
+                    }
+
+                    var res = GD.Load<GachaBannerResource>(path);
                     if (res != null)
                         _cache[id] = res.ToBanner();
                 }
@@ -80,8 +91,9 @@ public class GachaBannerDataSource : IDataSource<GachaBanner>
                 SoftPityRateIncrease = 0.06,
                 Pool = new System.Collections.Generic.List<GachaPoolEntry>
                 {
-                    new() { RewardId = "cat_sleepy_01", Type = RewardType.Pet, Rarity = PetRarity.Common, Weight = 40 },
-                    new() { RewardId = "dog_common_01", Type = RewardType.Pet, Rarity = PetRarity.Common, Weight = 40 },
+                    new() { RewardId = "cat_sleepy_01", Type = RewardType.Pet, Rarity = PetRarity.Common, Weight = 30 },
+                    new() { RewardId = "dog_common_01", Type = RewardType.Pet, Rarity = PetRarity.Common, Weight = 30 },
+                    new() { RewardId = "duck_common_01", Type = RewardType.Pet, Rarity = PetRarity.Common, Weight = 20 },
                     new() { RewardId = "cat_playful_02", Type = RewardType.Pet, Rarity = PetRarity.Rare, Weight = 20 },
                     new() { RewardId = "bunny_rare_01", Type = RewardType.Pet, Rarity = PetRarity.Rare, Weight = 10 },
                     new() { RewardId = "dog_happy_01", Type = RewardType.Pet, Rarity = PetRarity.Epic, Weight = 5 },

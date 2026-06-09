@@ -97,8 +97,8 @@ public partial class PetShowcase : Control
 		int count = pets.Count;
 		int cols = Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(count)));
 		int rows = Mathf.CeilToInt((float)count / cols);
-		float cellW = Mathf.Max(worldW / cols, 160f);
-		float cellH = Mathf.Max(worldH / rows, 200f);
+		float cellW = Mathf.Max(worldW / cols, 210f);
+		float cellH = Mathf.Max(worldH / rows, 250f);
 
 		for (int i = 0; i < count; i++)
 		{
@@ -153,7 +153,7 @@ public partial class PetShowcase : Control
 			foreach (var actor in _actors)
 			{
 				if (actor.PetInstance == null) continue;
-				if ((mpos - actor.GlobalPosition).Length() < 80f)
+				if ((mpos - actor.GlobalPosition).Length() < 96f)
 				{
 					ShowPetPopup(actor.PetInstance, actor.PetDef!, actor);
 					AcceptEvent();

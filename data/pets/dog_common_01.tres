@@ -9,4 +9,5 @@ Type = 1
 Rarity = 0
 BaseLevel = 1
 MaxLevel = 30
+SpriteSheetPath = "res://assets/textures/pets/dog_1_sheet.png"
 Description = "A loyal companion who never leaves your side"

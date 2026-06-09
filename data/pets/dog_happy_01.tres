@@ -9,4 +9,5 @@ Type = 1
 Rarity = 2
 BaseLevel = 1
 MaxLevel = 50
+SpriteSheetPath = "res://assets/textures/pets/dog_1_sheet.png"
 Description = "Wagging tail happy dog, more excited with combos"

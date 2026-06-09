@@ -37,25 +37,32 @@ Main (Node2D) [Main.cs]
 │   ├── PauseButton
 │   └── FloatingTextLayer → FloatingTextSpawner
 └── UILayer (CanvasLayer)        ← all overlays on CanvasLayer for screen-space rendering
-	├── TitleScreen [TitleScreen.cs]
-	├── PauseMenu [PauseMenu.cs]
-	└── GameOverPanel [GameOverPanel.cs]
+    ├── TitleScreen [TitleScreen.cs]
+    ├── PauseMenu [PauseMenu.cs]
+    ├── GameOverPanel [GameOverPanel.cs]
+    ├── PetShowcase [PetShowcase.cs]   ← fullscreen pet room (from pet_showcase.tscn)
+    │   ├── Background (ColorRect)
+    │   ├── PetsBg (Sprite2D)
+    │   ├── PetWorld (Node2D)          ← pet actors spawned here
+    │   ├── TopBar + TitleLabel + CloseButton
+    │   ├── BottomTip
+    │   └── PetPopup (PopupPanel)      ← detail popup with needs bars, food buttons, play button
+    └── GachaBannerUI [GachaBannerUI.cs]  ← from gacha_banner_ui.tscn
 ```
 
 **CRITICAL**: UI overlays MUST be under a `CanvasLayer` node. Controls under `Node2D` render in world-space (affected by camera), not screen-space. The `UILayer` CanvasLayer was added specifically to fix this.
 
 ---
 
-## Tile Scene
+## Pet Actor Scene
 
 ```
-Tile (Node2D) [Tile.cs]
-├── CatTexture (TextureRect)    ← displays SVG cat by type
-├── SelectionBorder (ColorRect) ← gold, shown on select
-├── SpecialIcon (ColorRect)     ← bomb/rainbow/cross indicator
-├── GlowEffect (ColorRect)      ← shown on select
-└── ClickArea (Area2D)          ← DISABLED (InputPickable=false), input via Board._Input()
+PetActor (Node2D) [PetActor.cs]
+├── Sprite (Sprite2D)   ← centered, displays spritesheet via RegionEnabled + RegionRect
+└── ClickArea (Area2D)  ← collision radius 45
 ```
+
+SpriteSheet rendering uses `RegionEnabled = true` + `RegionRect` to slice a 3×3 grid (see SpriteSheet System below). No programmatic `_Draw()` fallback — pets without a sheet render invisible.
 
 ---
 
@@ -63,19 +70,50 @@ Tile (Node2D) [Tile.cs]
 
 ```
 scripts/
-├── autoload/    Global singletons (EventBus signals, GameData state, AudioManager SFX)
+├── autoload/    Global singletons (EventBus, GameData, ServiceInitializer, AudioManager)
 ├── core/        Pure logic — no Godot node dependency (static classes)
-├── game/        Scene nodes — Board, StateMachine, Tile, TileManager, AnimationController, BackgroundLayer
-├── ui/          UI screens — HUD, Title, Pause, GameOver, FloatingText
+├── game/        Scene nodes — Board, StateMachine, Tile, TileManager, AnimationController
+├── ui/          UI screens — HUD, Title, Pause, GameOver, FloatingText, Gacha UI
 ├── fx/          Effects — particles, screen shake
-└── utils/       Enums, constants, grid math
+├── utils/       Enums, constants, grid math, interfaces (IDataSource, IPersistentStorage)
+├── pets/
+│   ├── data/        PetDefinition, IPetDataSource, ResourcePetDataSource
+│   ├── game/        PetActor, PetLayer (world-space pet spawning)
+│   ├── models/      PetInstance, PetNeeds, PetCollection, PetType, PetRarity, PetFoodData
+│   ├── services/    PetCollectionService, PetCareService, PetLevelCalculator
+│   └── ui/          PetShowcase, PetDetailPopup, PetCollectionPanel, PetSlot
+├── gacha/
+│   ├── data/        GachaBannerResource, GachaBannerDataSource, GachaPoolEntryResource
+│   ├── models/      GachaBanner, GachaPoolEntry, RewardType, GachaRollResult, GachaPityState
+│   ├── services/    GachaDrawService, GachaRollService, GachaPityTracker
+│   └── ui/          GachaBannerUI, RarityRevealEffect
+└── currency/
+    ├── models/      CurrencyType, CurrencyBalance, CurrencySaveData
+    ├── services/    CurrencyService, ICurrencyService
+    └── ui/          CurrencyDisplay
 ```
+
+---
+
+## Service Locator (ServiceInitializer.cs — Autoload Singleton)
+
+All pet/gacha/currency services are registered in `ServiceInitializer._Ready()` and accessed via `ServiceInitializer.Instance.GetService<T>()`.
+
+Registration order:
+1. `GodotFileStorage` → `IPersistentStorage`
+2. `CurrencyService` → `ICurrencyService`
+3. `ResourcePetDataSource` → `IPetDataSource` (loads from `res://data/pets/`)
+4. `PetCollectionService` → `IPetCollectionService`
+5. `GachaRollService` + `GachaPityTracker`
+6. `GachaBannerDataSource` → `IDataSource<GachaBanner>`
+7. `GachaDrawService` → coordinates draw, pity, currency, collection
+8. `PetCareService` → feed/play/tick
 
 ---
 
 ## Signal Bus (EventBus.cs — Autoload Singleton)
 
-22 signals. Access via `EventBus.Instance.SignalName`:
+Access via `EventBus.Instance.SignalName`. Signals used directly (no wrapper interfaces — `IPetEventBus`/`IGachaEventBus` were removed due to runtime issues).
 
 | Signal | Params | Emitted By | Listened By |
 |--------|--------|-----------|-------------|
@@ -100,6 +138,138 @@ scripts/
 | `PlayEffect` | `string effectName, Vector2 pos` | GameStateMachine, UI scripts | AudioManager |
 | `ScreenShake` | `float intensity, duration` | — | ScreenShake |
 | `ShowFloatingText` | `string text, Vector2 pos, Color` | HUD | FloatingTextSpawner |
+| `CurrencyChanged` | `string currencyId, int newBalance, int delta` | GameData/CurrencyService | HUD, GachaBannerUI |
+| `PetAcquired` | `string petDefId` | PetCollectionService | GachaBannerUI |
+| `PetLeveledUp` | `string petInstanceId, int newLevel` | PetCollectionService | — |
+| `PetEvolved` | `string petInstanceId, string newDefId` | PetCollectionService | — |
+| `ActivePetChanged` | `string petInstanceId` | PetCollectionService | — |
+| `GachaPullCompleted` | `GachaRollResult result` | GachaDrawService | GachaBannerUI |
+
+---
+
+## SpriteSheet System
+
+Hand-drawn pet sprites in `assets/textures/pets/`. All sheets are **1024×1024** with a **3×3 grid**.
+
+| File | UID | Used by |
+|------|-----|---------|
+| `cat_1_sheet.png` | `uid://dnhbi8f87dedg` | cat_sleepy_01 |
+| `cat_2_sheet.png` | `uid://cs1ovluo0rudy` | cat_playful_02 |
+| `dog_1_sheet.png` | `uid://dj2vbuex0lrxg` | dog_common_01, dog_happy_01 |
+| `bunny_1_sheet.png` | `uid://dfesnclrfye56` | bunny_rare_01 |
+| `duck_1_sheet.png` | `uid://d308x3pogdos5` | duck_common_01 |
+
+### 3×3 Grid Layout
+
+```
+col: 0 (x=0)     1 (x=341)     2 (x=682)
+row 0 (y=0):    [0] idle    [1] happy    [2] excited
+row 1 (y=341):  [3] look L  [4] sitting  [5] look R
+row 2 (y=682):  [6] sad     [7] sleeping [8] blink
+
+Cell sizes: cols {341, 341, 342}, rows {341, 341, 342}
+Bottom 37px of each cell = text label (cropped out)
+Inset: 3px on all sides to hide grid lines
+```
+
+### Mood → Cell Mapping (PetActor.cs)
+
+```csharp
+MOOD_CELLS = {
+    Walking:  { 1, 2 },  // alternate happy/excited, FlipH for direction
+    Idle:     { 0, 8 },  // neutral, occasional blink
+    Sitting:  { 4 },     // sitting
+    Sleeping: { 7 },     // sleeping
+};
+```
+
+### Texture Loading
+
+`PetActor.Setup()` loads textures via hardcoded `SHEET_PATH_MAP` (pet ID → path), using `GD.Load<Texture2D>(path)`. Falls back to `def.SpriteSheetPath` string field for custom pets.
+
+**Do NOT** use `.tres` `ext_resource` for texture references — Godot 4 `.tres` resource resolution for textures is unreliable when editing files outside the editor. The hardcoded path map + `GD.Load` at runtime is the verified working approach.
+
+### HUD
+
+Name + single combined needs bar drawn below the pet (y=185) via `_Draw()`. Bar color: green (>60%), yellow (>30%), red (<30%).
+
+### PetActor Init Order (CRITICAL)
+
+`Setup()` is called BEFORE `AddChild()` → `_Ready()`. So `_sprite` MUST be fetched inside `Setup()` via `_sprite ??= GetNodeOrNull<Sprite2D>("Sprite")`. Same in `_Ready()` for redundancy.
+
+`PetShowcase.SpawnPets()` MUST use `PetActorScene.Instantiate<PetActor>()` from the packed scene — the `PetActorScene` export in `pet_showcase.tscn` references `pet_actor.tscn` via UID. Without it, `new PetActor()` creates a bare node without the "Sprite" child.
+
+---
+
+## Pet System Enums & Models
+
+```csharp
+enum PetType   { Cat, Dog, Bunny, Bird, Fox, Bear }
+enum PetRarity { Common, Rare, Epic, Legendary }
+enum PetMood   { Walking, Idle, Sitting, Sleeping }
+```
+
+`PetInstance`: runtime state (Id, PetDefId, Level, XP, Nickname, Needs, etc.)
+`PetNeeds`: Hunger/Happiness/Energy (0–100), decays over time, restored via feed/play
+`PetDefinition` (`[GlobalClass] Resource`): loaded from `res://data/pets/{id}.tres`
+
+---
+
+## Pet Data Flow
+
+```
+GameData._Ready()
+  → CallDeferred(AddDefaultPet)
+    → PetCollectionService.AddPet("cat_sleepy_01")
+
+PetShowcase.SpawnPets()
+  → PetCollectionService.GetAllOwnedPets()
+  → IPetDataSource.GetPetDefinition(pet.PetDefId)
+  → PetActorScene.Instantiate<PetActor>()
+  → actor.Setup(pet, def)          ← loads sheet, sets RegionRect
+  → actor.SetWalkArea(...)
+  → PetWorld.AddChild(actor)
+
+PetShowcase._Input()
+  → distance check (radius 96px)
+  → ShowPetPopup(pet, def, actor)  ← shows PopupPanel with needs bars
+```
+
+---
+
+## Gacha System
+
+`GachaBannerUI` (`.tscn` scene, screen-space Control):
+- Opens from Title screen
+- `HeaderPanel` MUST have `offset_top=0` (Godot editor may reset anchors)
+- Pull buttons: ×1 (50 coins) / ×10 (500 coins)
+- Service fallback: if `ServiceInitializer` lookup fails, creates `GachaDrawService` inline
+
+`GachaBannerDataSource`:
+- Loads banners from `res://data/gacha/{id}.tres` via `ResourceLoader.Exists()` guard
+- `GetOrCreateDefault("standard_banner")` returns hardcoded fallback banner with 7 pets
+- Missing `.tres` files are silently handled (no Godot load error)
+
+Gacha Pool (standard_banner):
+| Reward ID | Type | Rarity | Weight |
+|-----------|------|--------|--------|
+| cat_sleepy_01 (uses cat_1_sheet) | Pet | Common | 30 |
+| dog_common_01 (uses dog_1_sheet) | Pet | Common | 30 |
+| duck_common_01 (uses duck_1_sheet) | Pet | Common | 20 |
+| cat_playful_02 (uses cat_2_sheet) | Pet | Rare | 20 |
+| bunny_rare_01 (uses bunny_1_sheet) | Pet | Rare | 10 |
+| dog_happy_01 (uses dog_1_sheet) | Pet | Epic | 5 |
+| fox_legendary_01 (no sheet yet) | Pet | Legendary | 1 |
+
+---
+
+## Currency System
+
+- `GameData` is single source of truth for balances (`CurrencyBalances` dictionary)
+- `CurrencyService` delegates to `GameData.AddCurrency()` / `GameData.SpendCurrency()`
+- Initial balance: 500 soft_currency (set in `GameData._Ready()`)
+- Gacha pulls deduct from soft_currency via `GachaDrawService` → `CurrencyService.Spend()`
+- HUD coin display updates via `CurrencyChanged` signal
 
 ---
 
@@ -107,15 +277,15 @@ scripts/
 
 ```
 IDLE(0) → tap tile → SELECTED(1) → tap adjacent → SWAPPING(2)
-													├─ no match → SWAP_BACK(3) → IDLE
-													└─ match → CHECKING_MATCHES(4)
-															   → CLEARING(5)
-															   → FALLING(6)
-															   → SPAWNING(7)
-															   → CASCADE_CHECK(8)
-															   → loop back or → CHECK_VALID(9)
-																			   ├─ valid → IDLE
-																			   └─ deadlock → RESHUFFLING(10) → IDLE
+                                                    ├─ no match → SWAP_BACK(3) → IDLE
+                                                    └─ match → CHECKING_MATCHES(4)
+                                                               → CLEARING(5)
+                                                               → FALLING(6)
+                                                               → SPAWNING(7)
+                                                               → CASCADE_CHECK(8)
+                                                               → loop back or → CHECK_VALID(9)
+                                                                               ├─ valid → IDLE
+                                                                               └─ deadlock → RESHUFFLING(10) → IDLE
 
 PAUSED(11)  ← any state → PAUSED → resume → previous state
 GAME_OVER(12)  ← GameData.UseMove() when moves ≤ 0, or countdown timer expiry
@@ -136,15 +306,15 @@ User click
   → Board._Input() [get_local_mouse_position, GridUtils.WorldToGrid]
   → TileManager.GetActiveTile(index)
   → GameStateMachine.OnTileClicked(tile)
-	→ IDLE: tile.Select(), state→SELECTED
-	→ SELECTED: check adjacency (|dx|+|dy|==1)
-	  → ExecuteSwap():
-		1. AnimController.PlaySwapAsync(tileA, tileB)
-		2. BoardData.Swap()
-		3. TileManager.RefreshFromData()
-		4. MatchDetector.DetectAll()
-		→ match → RunCascadeLoop()
-		→ no match → ExecuteSwapBack()
+    → IDLE: tile.Select(), state→SELECTED
+    → SELECTED: check adjacency (|dx|+|dy|==1)
+      → ExecuteSwap():
+        1. AnimController.PlaySwapAsync(tileA, tileB)
+        2. BoardData.Swap()
+        3. TileManager.RefreshFromData()
+        4. MatchDetector.DetectAll()
+        → match → RunCascadeLoop()
+        → no match → ExecuteSwapBack()
 ```
 
 ### Cascade Loop (per iteration)
@@ -193,7 +363,7 @@ Key methods:
 
 ### ✅ DO
 - `partial class X : Node2D` for scene-attached scripts
-- `[Signal] public delegate void XEventHandler(...)` for signals  
+- `[Signal] public delegate void XEventHandler(...)` for signals
 - `EmitSignal(SignalName.X, args)` to emit
 - `EventBus.Instance.X += Handler` to subscribe to autoload signals
 - `GetNode<T>("Path")` in `_Ready()` for child access (runs BEFORE children's _Ready)
@@ -208,10 +378,11 @@ Key methods:
 - Don't use `sm.Call("method_name")` string invocation — use typed method calls
 - Don't put Controls directly under Node2D — use CanvasLayer
 - Don't use GDScript snake_case signal names in `Connect()` — use C# PascalCase
-- Don't use `preload("res://...)` — use `GD.Load<T>("res://...")` 
+- Don't use `preload("res://...)` — use `GD.Load<T>("res://...")`
 - Don't store plain C# objects in `Godot.Collections.Array` — they can't be wrapped as Variant
 - Don't use `partial class` without Godot base for data-only classes — just `public class`
 - Don't forget `using Godot;` on files using Godot types (Node, Vector2, Color, etc.)
+- **Don't put SpriteSheet texture references in `.tres` `ext_resource`** — Godot 4 resolves them unreliably for manually-edited files. Use hardcoded path map + `GD.Load` at runtime.
 
 ### File name = class name
 Godot C# requires the `.cs` filename to match the class name exactly. `GameStateMachine.cs` contains `GameStateMachine` class. `Board.cs` contains `Board` class. Mismatch causes "Cannot instantiate C# script" error.
@@ -307,6 +478,12 @@ Sound mappings:
 9. **Quit while paused** — `ReloadCurrentScene()` does not reset `GetTree().Paused`. Must unpause first.
 10. **Double board init** — `Board._Ready()` should NOT call `StateMachine.Initialize()`. Board is only generated when PLAY is pressed via `ResetBoard()`.
 11. **Sprite2D under Control** — Don't mix Sprite2D with Controls under CanvasLayer. Use TextureRect with full anchors instead.
+12. **Setup() before _Ready()** — `PetActor.Setup()` is called before the node enters the tree. Always fetch child nodes inside `Setup()` via `??=`, not just in `_Ready()`.
+13. **PetActorScene export must be set** — `pet_showcase.tscn` MUST have `PetActorScene` referencing `pet_actor.tscn`. Without it, pets render as invisible bare nodes.
+14. **Don't use `.tres` ext_resource for textures** — Godot 4 resolves `ext_resource` texture references unreliably for files edited outside the Godot editor. Use string path + `GD.Load<Texture2D>()` at runtime instead.
+15. **GachaBannerUI HeaderPanel anchor** — Godot editor may reset `offset_top` on save. Must be `offset_top=0` to anchor to top of screen.
+16. **Missing `.tres` resources** — Always use `ResourceLoader.Exists(path)` before `GD.Load()` for optional resources. This prevents Godot from printing load errors before the null-check code runs.
+17. **dotnet environment** — `dotnet build`/`dotnet test` require .NET 8.0 SDK. Godot Mono edition is required (NOT standard Godot).
 
 ---
 
@@ -340,6 +517,26 @@ Sound mappings:
 | `scripts/core/ValidMoveChecker.cs` | Deadlock detection |
 | `scripts/utils/GridUtils.cs` | Coordinate conversion, dynamic sizing |
 | `scripts/utils/Enums.cs` | GameState, CrystalType, SpecialType, MatchShape |
-| `scripts/autoload/EventBus.cs` | 22 signals, Instance singleton |
-| `scripts/autoload/GameData.cs` | Score, moves, timer, settings |
+| `scripts/autoload/EventBus.cs` | Signal bus (pet/gacha/currency + game signals) |
+| `scripts/autoload/GameData.cs` | Score, moves, timer, currency balances, default pet |
+| `scripts/autoload/ServiceInitializer.cs` | DI registry for all services |
 | `scripts/autoload/AudioManager.cs` | SFX object pool (16 sounds) |
+| `scripts/pets/game/PetActor.cs` | Pet visual: spritesheet slicing, mood animation, HUD |
+| `scripts/pets/game/PetLayer.cs` | Board-space pet spawning layer |
+| `scripts/pets/ui/PetShowcase.cs` | Fullscreen pet room, spawn, popup, feed/play |
+| `scripts/pets/data/PetDefinition.cs` | `[GlobalClass] Resource`, per-pet config (.tres) |
+| `scripts/pets/data/ResourcePetDataSource.cs` | Loads `PetDefinition` from `data/pets/*.tres` |
+| `scripts/pets/services/PetCollectionService.cs` | Owned pets CRUD, XP, evolution |
+| `scripts/pets/services/PetCareService.cs` | Feed, play, needs decay tick |
+| `scripts/pets/models/PetInstance.cs` | Runtime pet state (level, xp, needs, nickname) |
+| `scripts/pets/models/PetNeeds.cs` | Hunger/Happiness/Energy (0–100) |
+| `scripts/gacha/ui/GachaBannerUI.cs` | Gacha screen (pull buttons, result display) |
+| `scripts/gacha/services/GachaDrawService.cs` | Draw logic, pity, reward distribution |
+| `scripts/gacha/data/GachaBannerDataSource.cs` | Banner loading + hardcoded fallback |
+| `scripts/currency/services/CurrencyService.cs` | Delegates to GameData, emits CurrencyChanged |
+| `data/pets/*.tres` | Pet definition resource files (6 pets + 1 duck) |
+| `assets/textures/pets/*.png` | Hand-drawn 1024×1024 spritesheets (5 files) |
+| `assets/scenes/pet_actor.tscn` | Pet actor scene (Sprite + ClickArea) |
+| `assets/scenes/pet_showcase.tscn` | Pet room scene (MUST have PetActorScene export set) |
+| `assets/scenes/gacha_banner_ui.tscn` | Gacha UI scene (HeaderPanel anchor sensitive) |
+| `assets/scenes/hud.tscn` | HUD with dark top bar, coin display, combo banner |

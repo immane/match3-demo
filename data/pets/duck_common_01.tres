@@ -3,11 +3,11 @@
 
 [resource]
 script = ExtResource("1")
-Id = "bunny_rare_01"
-DisplayName = "Moon Bunny"
-Type = 2
-Rarity = 1
+Id = "duck_common_01"
+DisplayName = "Ducky"
+Type = 3
+Rarity = 0
 BaseLevel = 1
-MaxLevel = 40
-SpriteSheetPath = "res://assets/textures/pets/bunny_1_sheet.png"
-Description = "A mystical bunny that appears under moonlight"
+MaxLevel = 30
+SpriteSheetPath = "res://assets/textures/pets/duck_1_sheet.png"
+Description = "A cheerful little duckling"

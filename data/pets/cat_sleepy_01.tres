@@ -9,4 +9,5 @@ Type = 0
 Rarity = 0
 BaseLevel = 1
 MaxLevel = 30
+SpriteSheetPath = "res://assets/textures/pets/cat_1_sheet.png"
 Description = "Always napping, but reliable when it counts"

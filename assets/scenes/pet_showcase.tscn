@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://rp6aem5cbwqe" path="res://scripts/pets/ui/PetShowcase.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://cfa3h4odrlii6" path="res://assets/images/pets_bg.jpg" id="2_2g4kn"]
+[ext_resource type="PackedScene" uid="uid://bpq7k1mn8x3y" path="res://assets/scenes/pet_actor.tscn" id="3_pet_actor"]
 
 [node name="PetShowcase" type="Control" unique_id=335309856]
 layout_mode = 3
@@ -12,6 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1_script")
+PetActorScene = ExtResource("3_pet_actor")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1587155639]
 layout_mode = 1

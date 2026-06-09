@@ -13,6 +13,7 @@ public partial class PetDefinition : Resource
     [Export] public int MaxLevel { get; set; } = 50;
     [Export] public Texture2D? Icon { get; set; }
     [Export] public Texture2D? SpriteSheet { get; set; }
+    [Export] public string SpriteSheetPath { get; set; } = "";
     [Export] public int FrameCount { get; set; } = 4;
     [Export] public string Description { get; set; } = "";
     [Export] public Godot.Collections.Array<PetAbilityDef> Abilities { get; set; } = new();
