@@ -40,7 +40,7 @@ public partial class PetLayer : Node2D
 
 		_activePet = new PetActor();
 		_activePet.Name = "PetActor";
-		_activePet.Setup(pet.PetDefId, pet.Nickname, def.Rarity, pet.Level);
+		_activePet.Setup(pet, def, showBars: true);
 
 		// Walk area: lower portion of screen, below the board grid area
 		float gridW = GridUtils.GridCols * GridUtils.CellStep;

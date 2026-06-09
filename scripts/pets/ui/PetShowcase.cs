@@ -5,74 +5,83 @@ namespace Match3Demo;
 
 public partial class PetShowcase : Control
 {
-	private Node2D? _petWorld;
+	[Export] public PackedScene? PetActorScene { get; set; }
+
+	private Node2D _petWorld = null!;
 	private readonly List<PetActor> _actors = new();
-	private PetActor? _selectedActor;
-	private PetInstance? _selectedPet;
-	private PetDefinition? _selectedDef;
 	private PetCareService? _careService;
 	private IPetCollectionService? _petService;
 	private IPetDataSource? _petDs;
 
-	private Control? _sidePanel;
-	private ProgressBar? _hungerBar;
-	private ProgressBar? _happinessBar;
-	private ProgressBar? _energyBar;
-	private Label? _petNameLabel;
-	private Label? _petLevelLabel;
-	private Label? _currencyLabel;
-	private Label? _xpLabel;
-	private VBoxContainer? _foodBox;
+	private PopupPanel _petPopup = null!;
+	private Label _popupNameLabel = null!;
+	private Label _popupRarityLabel = null!;
+	private Label _popupXPLabel = null!;
+	private ProgressBar _hungerBar = null!;
+	private ProgressBar _happyBar = null!;
+	private ProgressBar _energyBar = null!;
+	private Label _hungerValue = null!;
+	private Label _happyValue = null!;
+	private Label _energyValue = null!;
+	private Label _currencyLabel = null!;
+
+	private PetInstance? _selectedPet;
+	private PetDefinition? _selectedDef;
+	private PetActor? _selectedActor;
 
 	public override void _Ready()
 	{
-		Size = GetViewport().GetVisibleRect().Size;
-		MouseFilter = MouseFilterEnum.Stop;
+		_petWorld = GetNode<Node2D>("PetWorld");
+		_petPopup = GetNode<PopupPanel>("PetPopup");
 
-		var bg = new ColorRect();
-		bg.Color = new Color(0.08f, 0.09f, 0.18f, 1f);
-		bg.Size = Size;
-		AddChild(bg);
+		var content = _petPopup.GetNode<VBoxContainer>("ContentBox");
+		_popupNameLabel = content.GetNode<Label>("PopupNameLabel");
+		_popupRarityLabel = content.GetNode<Label>("PopupRarityLabel");
+		_popupXPLabel = content.GetNode<Label>("PopupXPLabel");
+		_currencyLabel = content.GetNode<Label>("PopupCurrencyLabel");
 
-		_petWorld = new Node2D();
-		_petWorld.Name = "PetWorld";
-		AddChild(_petWorld);
+		var needsSection = content.GetNode<VBoxContainer>("NeedsSection");
+		_hungerBar = needsSection.GetNode<ProgressBar>("HungerRow/HungerBar");
+		_happyBar = needsSection.GetNode<ProgressBar>("HappyRow/HappyBar");
+		_energyBar = needsSection.GetNode<ProgressBar>("EnergyRow/EnergyBar");
+		_hungerValue = needsSection.GetNode<Label>("HungerRow/HungerValue");
+		_happyValue = needsSection.GetNode<Label>("HappyRow/HappyValue");
+		_energyValue = needsSection.GetNode<Label>("EnergyRow/EnergyValue");
 
-		BuildSidePanel();
+		// Wire food buttons
+		var foodGrid = content.GetNode<GridContainer>("FoodGrid");
+		var foodIds = new[] { "fish", "milk", "treat", "steak", "cake", "water" };
+		int idx = 0;
+		foreach (var child in foodGrid.GetChildren())
+		{
+			if (child is Button btn && idx < foodIds.Length)
+			{
+				var fid = foodIds[idx++];
+				btn.Pressed += () => FeedPet(fid);
+			}
+		}
 
-		var title = new Label();
-		title.Text = "My Pets";
-		title.HorizontalAlignment = HorizontalAlignment.Center;
-		title.AddThemeFontSizeOverride("font_size", 34);
-		title.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-		title.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		title.OffsetBottom = 44;
-		AddChild(title);
+		content.GetNode<Button>("PlayButton").Pressed += PlayWithPet;
+		content.GetNode<Button>("PopupCloseButton").Pressed += () => _petPopup.Hide();
 
-		var closeBtn = new Button();
-		closeBtn.Text = "X";
-		closeBtn.AddThemeFontSizeOverride("font_size", 28);
-		closeBtn.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-		closeBtn.OffsetLeft = -56;
-		closeBtn.OffsetRight = 0;
-		closeBtn.OffsetBottom = 44;
-		closeBtn.Pressed += () =>
+		GetNode<Button>("TopBar/CloseButton").Pressed += () =>
 		{
 			var m = GetNode("/root/Main") as Main;
 			m?.HidePetCollection();
 		};
-		AddChild(closeBtn);
+
+		// Style progress bars
+		StyleBar(_hungerBar, new Color(1f, 0.35f, 0.1f));
+		StyleBar(_happyBar, new Color(1f, 0.7f, 0.1f));
+		StyleBar(_energyBar, new Color(0.2f, 0.65f, 1f));
 
 		_careService = ServiceInitializer.Instance?.GetService<PetCareService>();
 		_petService = ServiceInitializer.Instance?.GetService<IPetCollectionService>();
 		_petDs = ServiceInitializer.Instance?.GetService<IPetDataSource>();
-
-		EventBus.Instance.PetFed += OnPetFed;
 	}
 
 	public override void _ExitTree()
 	{
-		EventBus.Instance.PetFed -= OnPetFed;
 		ClearAll();
 	}
 
@@ -82,14 +91,14 @@ public partial class PetShowcase : Control
 		var pets = _petService?.GetAllOwnedPets();
 		if (pets == null || pets.Count == 0) return;
 
-		float worldW = Size.X * 0.58f;
-		float worldH = Size.Y;
+		float worldW = GetViewport().GetVisibleRect().Size.X;
+		float worldH = GetViewport().GetVisibleRect().Size.Y - 100f;
 
 		int count = pets.Count;
 		int cols = Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(count)));
 		int rows = Mathf.CeilToInt((float)count / cols);
-		float cellW = worldW / cols;
-		float cellH = worldH / rows;
+		float cellW = Mathf.Max(worldW / cols, 160f);
+		float cellH = Mathf.Max(worldH / rows, 200f);
 
 		for (int i = 0; i < count; i++)
 		{
@@ -102,286 +111,122 @@ public partial class PetShowcase : Control
 			float cx = cellW * col + cellW / 2f;
 			float cy = cellH * row + cellH / 2f;
 
-			var actor = new PetActor();
-			actor.Setup(pet.PetDefId, pet.Nickname, def.Rarity, pet.Level);
+			var actor = PetActorScene?.Instantiate<PetActor>() ?? new PetActor();
+			actor.Setup(pet, def, showBars: true);
 			actor.Position = new Vector2(cx, cy);
 			actor.SetWalkArea(
-				new Vector2(cx - cellW / 2f + 40, cy - cellH / 2f + 50),
-				new Vector2(cx + cellW / 2f - 40, cy + cellH / 2f - 70)
+				new Vector2(cx - cellW / 2f + 60, cy - cellH / 2f + 100),
+				new Vector2(cx + cellW / 2f - 60, cy + cellH / 2f - 100)
 			);
 
-			var capturedPet = pet;
-			var capturedDef = def;
 			actor.Connect(PetActor.SignalName.PetClicked, Callable.From<InputEvent>(evt =>
 			{
 				if (evt is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-					SelectPet(actor, capturedPet, capturedDef);
+					ShowPetPopup(pet, def, actor);
 			}));
 
-			_petWorld?.AddChild(actor);
+			_petWorld.AddChild(actor);
 			_actors.Add(actor);
 		}
-
-		if (_actors.Count > 0 && _petDs != null)
-			SelectPet(_actors[0], pets[0], _petDs.GetPetDefinition(pets[0].PetDefId)!);
-	}
-
-	private void SelectPet(PetActor actor, PetInstance pet, PetDefinition def)
-	{
-		_selectedActor = actor;
-		_selectedPet = pet;
-		_selectedDef = def;
-		RefreshInfo();
 	}
 
 	private void ClearAll()
 	{
 		foreach (var a in _actors) a.QueueFree();
 		_actors.Clear();
-		_selectedActor = null;
 		_selectedPet = null;
 		_selectedDef = null;
+		_selectedActor = null;
 	}
 
 	public override void _Process(double delta)
 	{
 		_careService?.TickPets(delta);
-		if (_selectedPet != null)
-			UpdateBars();
 	}
 
-	// ========== SIDE PANEL ==========
-
-	private void BuildSidePanel()
+	public override void _Input(InputEvent @event)
 	{
-		float panelX = Size.X * 0.6f;
-		float panelW = Size.X - panelX - 8f;
-
-		_sidePanel = new Control();
-		_sidePanel.SetAnchorsPreset(Control.LayoutPreset.RightWide);
-		_sidePanel.OffsetLeft = -(panelW);
-		_sidePanel.OffsetBottom = 0;
-		_sidePanel.MouseFilter = MouseFilterEnum.Pass;
-		AddChild(_sidePanel);
-
-		var scroll = new ScrollContainer();
-		scroll.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
-		_sidePanel.AddChild(scroll);
-
-		var content = new VBoxContainer();
-		content.AddThemeConstantOverride("separation", 8);
-		content.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-		scroll.AddChild(content);
-
-		// Info section
-		var infoSection = MakeSection(content, "Info");
-		_petNameLabel = MakeLabel("Select a pet", 22, Colors.White);
-		infoSection.AddChild(_petNameLabel);
-		_petLevelLabel = MakeLabel("", 15, new Color(0.6f, 0.6f, 0.7f));
-		infoSection.AddChild(_petLevelLabel);
-		_xpLabel = MakeLabel("", 14, new Color(0.3f, 0.7f, 1f));
-		infoSection.AddChild(_xpLabel);
-
-		// Needs section
-		var needsSection = MakeSection(content, "Needs");
-		_hungerBar = MakeBar(needsSection, "Hunger", new Color(1f, 0.5f, 0.15f));
-		_happinessBar = MakeBar(needsSection, "Happy", new Color(1f, 0.8f, 0.2f));
-		_energyBar = MakeBar(needsSection, "Energy", new Color(0.25f, 0.75f, 1f));
-
-		// Currency
-		_currencyLabel = MakeLabel("Coins: 0", 16, new Color(1f, 0.85f, 0.2f));
-		needsSection.AddChild(_currencyLabel);
-
-		// Food section
-		var foodSection = MakeSection(content, "Feed");
-		_foodBox = new VBoxContainer();
-		_foodBox.AddThemeConstantOverride("separation", 4);
-		foodSection.AddChild(_foodBox);
-
-		foreach (var food in PetFoodData.AllFoods)
+		if (!Visible) return;
+		if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 		{
-			var row = new HBoxContainer();
-			row.AddThemeConstantOverride("separation", 4);
-			_foodBox.AddChild(row);
-
-			var btn = new Button();
-			btn.Text = $"{food.Emoji}";
-			btn.TooltipText = $"{food.DisplayName}\nHunger +{food.HungerRestore}  Happy +{food.HappinessRestore}";
-			btn.CustomMinimumSize = new Vector2(42, 36);
-			btn.AddThemeFontSizeOverride("font_size", 16);
-			var fid = food.FoodId;
-			btn.Pressed += () => FeedPet(fid);
-			row.AddChild(btn);
-
-			var info = new Label();
-			info.Text = $"{food.DisplayName}  {food.Cost}c";
-			info.AddThemeFontSizeOverride("font_size", 13);
-			info.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.7f));
-			info.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-			row.AddChild(info);
+			var mpos = GetGlobalMousePosition();
+			foreach (var actor in _actors)
+			{
+				if (actor.PetInstance == null) continue;
+				if ((mpos - actor.GlobalPosition).Length() < 80f)
+				{
+					ShowPetPopup(actor.PetInstance, actor.PetDef!, actor);
+					AcceptEvent();
+					break;
+				}
+			}
 		}
-
-		// Play
-		var playSection = MakeSection(content, "Play");
-		var playBtn = new Button();
-		playBtn.Text = "Play With Pet";
-		playBtn.CustomMinimumSize = new Vector2(0, 42);
-		playBtn.AddThemeFontSizeOverride("font_size", 16);
-		playBtn.Pressed += () => PlayWithPet();
-		playBtn.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-		playSection.AddChild(playBtn);
 	}
 
-	private static VBoxContainer MakeSection(Node parent, string title)
+	private void ShowPetPopup(PetInstance pet, PetDefinition def, PetActor actor)
 	{
-		var panel = new PanelContainer();
-		panel.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-		parent.AddChild(panel);
+		_selectedPet = pet;
+		_selectedDef = def;
+		_selectedActor = actor;
 
-		var titleLabel = new Label();
-		titleLabel.Text = title;
-		titleLabel.AddThemeFontSizeOverride("font_size", 13);
-		titleLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.5f));
-		panel.AddChild(titleLabel);
+		_popupNameLabel.Text = !string.IsNullOrEmpty(pet.Nickname) ? pet.Nickname : def.DisplayName;
+		_popupRarityLabel.Text = $"{def.Rarity}  |  Lv.{pet.Level} / {def.MaxLevel}";
+		_popupXPLabel.Text = $"XP: {pet.CurrentXP} / {pet.NextLevelXP}";
 
-		var box = new VBoxContainer();
-		box.AddThemeConstantOverride("separation", 4);
-		panel.AddChild(box);
-		return box;
-	}
-
-	private static Label MakeLabel(string text, int size, Color color)
-	{
-		var l = new Label();
-		l.Text = text;
-		l.AddThemeFontSizeOverride("font_size", size);
-		l.AddThemeColorOverride("font_color", color);
-		return l;
-	}
-
-	private static ProgressBar MakeBar(Node parent, string label, Color color)
-	{
-		var bar = new ProgressBar();
-		bar.MaxValue = PetNeeds.MaxValue;
-		bar.Value = PetNeeds.MaxValue;
-		bar.ShowPercentage = false;
-		bar.CustomMinimumSize = new Vector2(0, 16);
-		bar.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-
-		var fill = new StyleBoxFlat();
-		fill.BgColor = color;
-		bar.AddThemeStyleboxOverride("fill", fill);
-		var bg = new StyleBoxFlat();
-		bg.BgColor = new Color(0.15f, 0.15f, 0.15f);
-		bar.AddThemeStyleboxOverride("background", bg);
-
-		var row = new HBoxContainer();
-		row.AddThemeConstantOverride("separation", 6);
-		parent.AddChild(row);
-
-		var lbl = new Label();
-		lbl.Text = label;
-		lbl.CustomMinimumSize = new Vector2(54, 0);
-		lbl.AddThemeFontSizeOverride("font_size", 12);
-		lbl.AddThemeColorOverride("font_color", color);
-		row.AddChild(lbl);
-		row.AddChild(bar);
-
-		var val = new Label();
-		val.Text = "100%";
-		val.CustomMinimumSize = new Vector2(34, 0);
-		val.AddThemeFontSizeOverride("font_size", 12);
-		val.AddThemeColorOverride("font_color", Colors.White);
-		row.AddChild(val);
-
-		return bar;
-	}
-
-	// ========== INTERACTIONS ==========
-
-	private void RefreshInfo()
-	{
-		if (_selectedPet == null || _selectedDef == null) return;
-		_petNameLabel!.Text = !string.IsNullOrEmpty(_selectedPet.Nickname) ? _selectedPet.Nickname : _selectedDef.DisplayName;
-		_petLevelLabel!.Text = $"{_selectedDef.Rarity}  |  Lv.{_selectedPet.Level} / {_selectedDef.MaxLevel}";
-		_xpLabel!.Text = $"XP: {_selectedPet.CurrentXP} / {_selectedPet.NextLevelXP}";
 		UpdateBars();
-		var bal = ServiceInitializer.Instance?.GetService<ICurrencyService>()?.GetBalance("soft_currency") ?? 0;
-		_currencyLabel!.Text = $"Coins: {bal}";
+		_currencyLabel.Text = $"Coins: {ServiceInitializer.Instance?.GetService<ICurrencyService>()?.GetBalance("soft_currency") ?? 0}";
+
+		_petPopup.PopupCentered();
 	}
 
 	private void UpdateBars()
 	{
 		if (_selectedPet == null) return;
 		var n = _selectedPet.Needs;
-		SetBarVal(_hungerBar!, n.Hunger);
-		SetBarVal(_happinessBar!, n.Happiness);
-		SetBarVal(_energyBar!, n.Energy);
+		SetBar(_hungerBar, _hungerValue, n.Hunger);
+		SetBar(_happyBar, _happyValue, n.Happiness);
+		SetBar(_energyBar, _energyValue, n.Energy);
+		_currencyLabel.Text = $"Coins: {ServiceInitializer.Instance?.GetService<ICurrencyService>()?.GetBalance("soft_currency") ?? 0}";
 	}
 
-	private static void SetBarVal(ProgressBar bar, float value)
+	private static void SetBar(ProgressBar bar, Label lbl, float val)
 	{
-		bar.Value = value;
-		if (bar.GetParent() is HBoxContainer row && row.GetChildCount() > 2)
-			if (row.GetChild(2) is Label lbl)
-				lbl.Text = $"{value:F0}%";
+		bar.Value = val;
+		lbl.Text = $"{val:F0}%";
 	}
 
 	private void FeedPet(string foodId)
 	{
 		if (_selectedPet == null || _careService == null) return;
-		if (_careService.Feed(_selectedPet.Id, foodId, out var error))
+		if (_careService.Feed(_selectedPet.Id, foodId, out _))
 		{
-			var food = PetFoodData.Get(foodId)!;
-			Notify($"+{food.HungerRestore} Hunger  +{food.HappinessRestore} Happy", Colors.Green);
-			RefreshInfo();
-			if (_selectedActor != null)
-				BounceActor(_selectedActor);
+			UpdateBars();
+			if (_selectedActor != null) Bounce(_selectedActor);
 		}
-		else if (error != null)
-			Notify(error, Colors.Red);
 	}
 
 	private void PlayWithPet()
 	{
 		if (_selectedPet == null || _careService == null) return;
-		if (_careService.Play(_selectedPet.Id, out var error))
+		if (_careService.Play(_selectedPet.Id, out _))
 		{
-			Notify("+20 Happy  -10 Energy", Colors.Cyan);
-			RefreshInfo();
-			if (_selectedActor != null)
-				BounceActor(_selectedActor);
+			UpdateBars();
+			if (_selectedActor != null) Bounce(_selectedActor);
 		}
-		else if (error != null)
-			Notify(error, Colors.Red);
 	}
 
-	private static void BounceActor(PetActor actor)
+	private static void Bounce(PetActor a)
 	{
-		var t = actor.CreateTween();
-		t.TweenProperty(actor, "scale", new Vector2(1.25f, 1.25f), 0.12f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		t.TweenProperty(actor, "scale", Vector2.One, 0.18f);
+		var t = a.CreateTween();
+		t.TweenProperty(a, "scale", new Vector2(1.25f, 1.25f), 0.12f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		t.TweenProperty(a, "scale", Vector2.One, 0.18f);
 	}
 
-	private void OnPetFed(string petInstanceId, string foodId) => RefreshInfo();
-
-	private void Notify(string text, Color color)
+	private static void StyleBar(ProgressBar bar, Color c)
 	{
-		var lbl = new Label();
-		lbl.Text = text;
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		lbl.AddThemeFontSizeOverride("font_size", 18);
-		lbl.AddThemeColorOverride("font_color", color);
-		lbl.AddThemeColorOverride("font_outline_color", Colors.Black);
-		lbl.AddThemeConstantOverride("outline_size", 2);
-		lbl.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
-		lbl.OffsetTop = -40;
-		lbl.OffsetBottom = 0;
-		AddChild(lbl);
-
-		var t = CreateTween();
-		t.TweenProperty(lbl, "modulate:a", 0f, 2f);
-		t.Finished += () => lbl.QueueFree();
+		var fill = new StyleBoxFlat { BgColor = c };
+		bar.AddThemeStyleboxOverride("fill", fill);
+		var bg = new StyleBoxFlat { BgColor = new Color(0.12f, 0.12f, 0.12f) };
+		bar.AddThemeStyleboxOverride("background", bg);
 	}
 }

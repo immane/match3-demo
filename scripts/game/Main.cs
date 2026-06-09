@@ -20,6 +20,7 @@ public partial class Main : Node2D
         _titleScreen = GetNode<Control>("UILayer/TitleScreen");
         _pauseMenu = GetNode<Control>("UILayer/PauseMenu");
         _gameOverPanel = GetNode<Control>("UILayer/GameOverPanel");
+        _petShowcase = GetNode<PetShowcase>("UILayer/PetShowcase");
         _board = GetNode<Board>("Board");
         _hud = GetNode<CanvasLayer>("HUD");
         _camera = GetNode<Camera2D>("Camera2D");
@@ -51,11 +52,6 @@ public partial class Main : Node2D
             var ss = _board.GetNode<ScreenShake>("ScreenShake");
             ss.Camera = _camera;
         }
-
-        // Create pet showcase (full-screen visual pets)
-        _petShowcase = new PetShowcase();
-        _petShowcase.Hide();
-        GetNode<CanvasLayer>("UILayer").AddChild(_petShowcase);
 
         // Create gacha UI
         _gachaUI = new GachaBannerUI();

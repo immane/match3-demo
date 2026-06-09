@@ -1,0 +1,274 @@
+[gd_scene format=3 uid="uid://bhevmk82gp1cx"]
+
+[ext_resource type="Script" uid="uid://rp6aem5cbwqe" path="res://scripts/pets/ui/PetShowcase.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cfa3h4odrlii6" path="res://assets/images/pets_bg.jpg" id="2_2g4kn"]
+
+[node name="PetShowcase" type="Control" unique_id=335309856]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1587155639]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.09, 0.18, 1)
+
+[node name="PetsBg" type="Sprite2D" parent="." unique_id=372360421]
+position = Vector2(532, 967)
+scale = Vector2(0.78776044, 0.7877604)
+texture = ExtResource("2_2g4kn")
+
+[node name="PetWorld" type="Node2D" parent="." unique_id=1870200612]
+position = Vector2(0, 50)
+
+[node name="TopBar" type="Control" parent="." unique_id=1097486809]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 48.0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="TopBar" unique_id=771457063]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 36
+text = "My Pets"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="TopBar" unique_id=220795342]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -81.0
+offset_top = -121.0
+offset_right = -25.0
+offset_bottom = -71.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "X"
+
+[node name="BottomTip" type="Label" parent="." unique_id=1813184715]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -44.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.4, 0.4, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "Click a pet to view details & feed"
+horizontal_alignment = 1
+
+[node name="PetPopup" type="PopupPanel" parent="." unique_id=2129353687]
+title = "Pet Details"
+size = Vector2i(420, 520)
+borderless = false
+
+[node name="ContentBox" type="VBoxContainer" parent="PetPopup" unique_id=1880437056]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 416.0
+offset_bottom = 533.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="PopupNameLabel" type="Label" parent="PetPopup/ContentBox" unique_id=1063922574]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Pet Name"
+horizontal_alignment = 1
+
+[node name="PopupRarityLabel" type="Label" parent="PetPopup/ContentBox" unique_id=2069878830]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 20
+text = "Common | Lv.1 / 50"
+horizontal_alignment = 1
+
+[node name="PopupXPLabel" type="Label" parent="PetPopup/ContentBox" unique_id=80316113]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "XP: 0 / 10"
+horizontal_alignment = 1
+
+[node name="NeedsSection" type="VBoxContainer" parent="PetPopup/ContentBox" unique_id=1610593849]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HungerRow" type="HBoxContainer" parent="PetPopup/ContentBox/NeedsSection" unique_id=1786188759]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HungerLabel" type="Label" parent="PetPopup/ContentBox/NeedsSection/HungerRow" unique_id=869818707]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Hunger"
+
+[node name="HungerBar" type="ProgressBar" parent="PetPopup/ContentBox/NeedsSection/HungerRow" unique_id=1148930633]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+show_percentage = false
+
+[node name="HungerValue" type="Label" parent="PetPopup/ContentBox/NeedsSection/HungerRow" unique_id=1401280844]
+custom_minimum_size = Vector2(42, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "80%"
+
+[node name="HappyRow" type="HBoxContainer" parent="PetPopup/ContentBox/NeedsSection" unique_id=1306870303]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HappyLabel" type="Label" parent="PetPopup/ContentBox/NeedsSection/HappyRow" unique_id=1868181859]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Happy"
+
+[node name="HappyBar" type="ProgressBar" parent="PetPopup/ContentBox/NeedsSection/HappyRow" unique_id=1994935184]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+show_percentage = false
+
+[node name="HappyValue" type="Label" parent="PetPopup/ContentBox/NeedsSection/HappyRow" unique_id=1850902830]
+custom_minimum_size = Vector2(42, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "80%"
+
+[node name="EnergyRow" type="HBoxContainer" parent="PetPopup/ContentBox/NeedsSection" unique_id=271534366]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnergyLabel" type="Label" parent="PetPopup/ContentBox/NeedsSection/EnergyRow" unique_id=1139416195]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.65, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Energy"
+
+[node name="EnergyBar" type="ProgressBar" parent="PetPopup/ContentBox/NeedsSection/EnergyRow" unique_id=1828282717]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+show_percentage = false
+
+[node name="EnergyValue" type="Label" parent="PetPopup/ContentBox/NeedsSection/EnergyRow" unique_id=1595931287]
+custom_minimum_size = Vector2(42, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "80%"
+
+[node name="PopupCurrencyLabel" type="Label" parent="PetPopup/ContentBox" unique_id=98287930]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "Coins: 0"
+horizontal_alignment = 1
+
+[node name="FoodGrid" type="GridContainer" parent="PetPopup/ContentBox" unique_id=1587914393]
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="FeedFish" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=500667616]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Fish: +25 Hunger  +5 Happy"
+theme_override_font_sizes/font_size = 18
+text = "🐟
+10c"
+
+[node name="FeedMilk" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=1888874466]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Milk: +18 Hunger  +8 Happy"
+theme_override_font_sizes/font_size = 18
+text = "🥛
+8c"
+
+[node name="FeedTreat" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=1694516530]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Cat Treat: +10 Hunger  +25 Happy"
+theme_override_font_sizes/font_size = 18
+text = "🍬
+15c"
+
+[node name="FeedSteak" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=900010720]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Steak: +50 Hunger  +15 Happy"
+theme_override_font_sizes/font_size = 18
+text = "🥩
+30c"
+
+[node name="FeedCake" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=1047848403]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Cake: +80 Hunger  +40 Happy"
+theme_override_font_sizes/font_size = 18
+text = "🍰
+50c"
+
+[node name="FeedWater" type="Button" parent="PetPopup/ContentBox/FoodGrid" unique_id=63375682]
+custom_minimum_size = Vector2(110, 64)
+layout_mode = 2
+tooltip_text = "Water: +8 Hunger  +2 Happy"
+theme_override_font_sizes/font_size = 18
+text = "💧
+5c"
+
+[node name="PlayButton" type="Button" parent="PetPopup/ContentBox" unique_id=72603638]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Play With Pet"
+
+[node name="PopupCloseButton" type="Button" parent="PetPopup/ContentBox" unique_id=540283319]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Close"

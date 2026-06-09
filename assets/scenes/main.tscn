@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://assets/scenes/title_screen.tscn" id="4_title"]
 [ext_resource type="PackedScene" path="res://assets/scenes/pause_menu.tscn" id="5_pause"]
 [ext_resource type="PackedScene" path="res://assets/scenes/game_over_panel.tscn" id="6_gameover"]
+[ext_resource type="PackedScene" path="res://assets/scenes/pet_showcase.tscn" id="7_pet_showcase"]
 
 [node name="Main" type="Node2D" unique_id=139962168]
 script = ExtResource("1_main_script")
@@ -27,3 +28,6 @@ grow_vertical = 2
 [node name="GameOverPanel" parent="UILayer" unique_id=431982450 instance=ExtResource("6_gameover")]
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="PetShowcase" parent="UILayer" instance=ExtResource("7_pet_showcase")]
+visible = false
