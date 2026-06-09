@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://bg8vmk82n3q7w"]
+
+[ext_resource type="Script" path="res://scripts/gacha/ui/GachaBannerUI.cs" id="1_script"]
+
+[node name="GachaBannerUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.1, 0.1, 0.2, 1)
+
+[node name="BannerPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 0.04
+anchor_right = 0.96
+anchor_bottom = 0.4
+mouse_filter = 2
+
+[node name="BannerVBox" type="VBoxContainer" parent="BannerPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BannerNameLabel" type="Label" parent="BannerPanel/BannerVBox"]
+layout_mode = 2
+text = "Standard Banner"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+
+[node name="PityLabel" type="Label" parent="BannerPanel/BannerVBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+
+[node name="CostLabel" type="Label" parent="BannerPanel/BannerVBox"]
+layout_mode = 2
+text = "Cost: 50"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="ButtonContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 10.0
+offset_right = 200.0
+offset_bottom = 80.0
+theme_override_constants/separation = 20
+
+[node name="PullOnceBtn" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Pull x1"
+custom_minimum_size = Vector2(180, 60)
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+
+[node name="PullMultiBtn" type="Button" parent="ButtonContainer"]
+layout_mode = 2
+text = "Pull x10"
+custom_minimum_size = Vector2(180, 60)
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+
+[node name="ResultContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -66.0
+offset_bottom = 52.0
+text = "X"
+theme_override_font_sizes/font_size = 30

@@ -52,19 +52,52 @@ public partial class PetActor : Node2D
 
 		(_bodyColor, _accentColor) = GetRarityColors(_rarity);
 
-		if (_sprite != null && def.SpriteSheet != null)
+		if (_sprite != null)
 		{
-			_sprite.Texture = def.SpriteSheet;
-			_sprite.Hframes = Math.Max(1, def.FrameCount);
-			_sprite.Visible = true;
-			_hasSprite = true;
-		}
-		else
-		{
-			if (_sprite != null) _sprite.Visible = false;
-			_hasSprite = false;
+			if (def.SpriteSheet != null)
+			{
+				_sprite.Texture = def.SpriteSheet;
+				_sprite.Hframes = Math.Max(1, def.FrameCount);
+				_hasSprite = true;
+			}
+			else
+			{
+				// Use existing cute cat SVGs as fallback
+				var tex = LoadPetTexture(def.Type, _rarity);
+				if (tex != null)
+				{
+					_sprite.Texture = tex;
+					_sprite.Hframes = 1;
+					_sprite.RegionEnabled = false;
+					_hasSprite = true;
+				}
+				else
+				{
+					_hasSprite = false;
+				}
+			}
+			_sprite.Visible = _hasSprite;
 		}
 		QueueRedraw();
+	}
+
+	private static readonly string[][] PetTexturePaths = new[]
+	{
+		new[] { "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_yellow.svg" },
+		new[] { "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_red.svg" },
+		new[] { "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_green.svg", "res://assets/textures/cats/cat_purple.svg" },
+		new[] { "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_yellow.svg", "res://assets/textures/cats/cat_blue.svg" },
+		new[] { "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_red.svg", "res://assets/textures/cats/cat_green.svg" },
+		new[] { "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_blue.svg", "res://assets/textures/cats/cat_purple.svg", "res://assets/textures/cats/cat_yellow.svg" },
+	};
+
+	private static Texture2D? LoadPetTexture(PetType type, PetRarity rarity)
+	{
+		int t = (int)type;
+		int r = (int)rarity;
+		if (t >= 0 && t < PetTexturePaths.Length && r >= 0 && r < PetTexturePaths[t].Length)
+			return GD.Load<Texture2D>(PetTexturePaths[t][r]);
+		return GD.Load<Texture2D>("res://assets/textures/cats/cat_red.svg");
 	}
 
 	public void SetWalkArea(Vector2 min, Vector2 max) { _areaMin = min; _areaMax = max; }

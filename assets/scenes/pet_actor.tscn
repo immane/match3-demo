@@ -9,8 +9,8 @@ radius = 45.0
 script = ExtResource("1_script")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-visible = false
 hframes = 1
+centered = true
 
 [node name="ClickArea" type="Area2D" parent="."]
 input_pickable = true

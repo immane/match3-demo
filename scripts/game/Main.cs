@@ -53,8 +53,9 @@ public partial class Main : Node2D
             ss.Camera = _camera;
         }
 
-        // Create gacha UI
-        _gachaUI = new GachaBannerUI();
+        // Load gacha UI from scene
+        var gachaScene = GD.Load<PackedScene>("res://assets/scenes/gacha_banner_ui.tscn");
+        _gachaUI = gachaScene.Instantiate<GachaBannerUI>();
         _gachaUI.Hide();
         GetNode<CanvasLayer>("UILayer").AddChild(_gachaUI);
 
