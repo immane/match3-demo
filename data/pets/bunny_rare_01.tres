@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PetDefinition" format=3 uid="uid://d4qgrja30irv"]
+
+[ext_resource type="Script" uid="uid://cgoyp1ftn5yvb" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+[ext_resource type="Script" uid="uid://d2v7xnwd0u16y" path="res://scripts/pets/data/PetAbilityDef.cs" id="1_507kn"]
+[ext_resource type="Script" uid="uid://ck3m30tmgqsqn" path="res://scripts/pets/data/EvolutionStep.cs" id="2_6khd4"]
+
+[resource]
+script = ExtResource("1")
+Id = "bunny_rare_01"
+DisplayName = "Moon Bunny"
+Type = 2
+Rarity = 1
+MaxLevel = 40
+Description = "A mystical bunny that appears under moonlight"

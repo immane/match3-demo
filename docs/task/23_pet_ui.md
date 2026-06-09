@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/pet_system.md](../design/pet_system.md) §1.3 — 表现层架构分层 (scripts/pets/ui/) |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 17 (ServiceInitializer — 通过 `GetService<T>()` 获取 `IPetCollectionService`、`IPetDataSource`)

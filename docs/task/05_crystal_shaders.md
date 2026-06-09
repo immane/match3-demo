@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/crystal_shader.md](../design/crystal_shader.md) — crystal.gdshader 完整效果规格和 GLSL 代码 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - 无 (完全独立, 可与其他所有 Phase 1 任务并行)

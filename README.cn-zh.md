@@ -1,6 +1,6 @@
 # 🐱 猫咪三消
 
-> 基于 Godot 4.6 .NET + C# 开发的可爱猫咪主题三消益智游戏，支持音效、倒计时和连锁消除
+> 基于 Godot 4.6 .NET + C# 开发的可爱猫咪主题三消益智游戏，支持宠物收集、抽卡、音效、倒计时和连锁消除
 
 <p align="center">
   <img src="https://img.shields.io/badge/Godot-4.6-blue?logo=godot-engine" alt="Godot 4.6">
@@ -10,8 +10,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/preview-0.10-1.jpg" width="45%" alt="标题画面">
-  <img src="docs/images/preview-0.10-2.jpg" width="45%" alt="游戏界面">
+  <img src="docs/images/preview-0.10-1.jpg" width="22.5%" alt="标题画面">
+  <img src="docs/images/preview-0.10-2.jpg" width="22.5%" alt="游戏界面">
+  <img src="docs/images/preview-0.20-2.jpg" width="22.5%" alt="宠物收藏">
+  <img src="docs/images/preview-0.20-3.jpg" width="22.5%" alt="抽卡画面">
 </p>
 
 ---
@@ -31,6 +33,11 @@
 - **暂停/继续** — 带暂停菜单
 - **游戏结束面板** — 显示分数、支持重来
 - **对象池管理** — 高性能复用 Tile 节点
+- **宠物收集系统** — 收集可爱手绘宠物（猫、狗、兔子、小鸭），全屏宠物房间查看
+- **宠物养成** — 喂食 & 玩耍，关注饱腹度/快乐度/精力值
+- **抽卡系统** — 消耗金币抽取稀有度各异的宠物（普通/稀有/史诗/传说）
+- **保底机制** — 70 抽保底稀有+，90 抽保底传说
+- **货币经济** — 游戏获得金币，用于抽卡和购买宠物食物
 
 ---
 
@@ -42,6 +49,8 @@
 4. 交换后能凑 3 个同色 → 消除得分！
 5. 上方掉落补位 → 新猫生成 → 连锁消除！
 6. 在 **30 秒倒计时**内争取最高分！
+7. 打开 **GACHA** 消耗金币抽取新宠物
+8. 进入 **PETS** 查看收藏、喂食互动
 
 ---
 
@@ -50,8 +59,9 @@
 ```
 scripts/
 ├── autoload/          # 全局单例
-│   ├── EventBus.cs    # 信号总线（22 个信号）
-│   ├── GameData.cs    # 分数、步数、计时、设置
+│   ├── EventBus.cs    # 信号总线（30+ 信号：游戏 + 宠物 + 抽卡 + 货币）
+│   ├── GameData.cs    # 分数、步数、计时、货币、默认宠物
+│   ├── ServiceInitializer.cs  # DI 服务注册
 │   └── AudioManager.cs # 音效对象池（16 种音效）
 ├── core/              # 纯逻辑（无引擎依赖）
 │   ├── BoardData.cs   # 8×8 棋盘 + CellData
@@ -71,17 +81,34 @@ scripts/
 │   └── Main.cs            # 主场景 + 倒计时
 ├── ui/                # UI 画面
 │   ├── TitleScreen.cs
-│   ├── HUD.cs             # 分数、步数、连击、计时
+│   ├── HUD.cs             # 分数、步数、连击、计时、金币
 │   ├── PauseMenu.cs
 │   ├── GameOverPanel.cs
 │   └── FloatingTextSpawner.cs
+├── pets/              # 宠物系统
+│   ├── data/              # PetDefinition, ResourcePetDataSource
+│   ├── game/              # PetActor（spritesheet + 动画）, PetLayer
+│   ├── models/            # PetInstance, PetNeeds, PetCollection
+│   ├── services/          # PetCollectionService, PetCareService
+│   └── ui/                # PetShowcase, PetDetailPopup
+├── gacha/             # 抽卡系统
+│   ├── data/              # GachaBannerResource, GachaBannerDataSource
+│   ├── models/            # GachaBanner, GachaRollResult, GachaPityState
+│   ├── services/          # GachaDrawService, GachaRollService, GachaPityTracker
+│   └── ui/                # GachaBannerUI, RarityRevealEffect
+├── currency/          # 货币系统
+│   ├── models/            # CurrencyType, CurrencyBalance
+│   ├── services/          # CurrencyService
+│   └── ui/                # CurrencyDisplay
 ├── fx/                # 视觉特效
 │   ├── ParticleController.cs
 │   └── ScreenShake.cs
 └── utils/
-    ├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
-    ├── Constants.cs   # 网格尺寸、动画时长
-    └── GridUtils.cs   # 坐标转换 + 动态布局
+	├── Enums.cs       # GameState, CrystalType, SpecialType, MatchShape
+	├── Constants.cs   # 网格尺寸、动画时长
+	├── GridUtils.cs   # 坐标转换 + 动态布局
+	├── IDataSource.cs    # 通用数据源接口
+	└── IPersistentStorage.cs  # 存档接口
 ```
 
 ---
@@ -134,6 +161,7 @@ dotnet test
 ## 🎨 素材说明
 
 - **猫咪 SVG** — 自定义矢量图形，位于 `assets/textures/cats/`
+- **宠物 Spritesheet** — 手绘 1024×1024 九宫格表情，位于 `assets/textures/pets/`
 - **音效** — 程序化可爱合成音效，位于 `assets/audio/`
 - **背景图片** — `assets/images/`
 

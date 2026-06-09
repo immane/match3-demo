@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/data_models.md](../design/data_models.md) — 枚举、常量、TileData、BoardData 完整规格 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 01 (project.godot 和目录结构)

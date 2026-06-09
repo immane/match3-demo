@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/architecture_update.md](../design/architecture_update.md) §7 — 新增通用工具（持久化、加权随机、泛型数据源） |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - 无（纯 C# 工具类，无模块依赖）

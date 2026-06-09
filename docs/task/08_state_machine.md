@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/gravity_cascade.md](../design/gravity_cascade.md) — 级联循环在状态机中的位置 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (enums, constants, BoardData, TileData)

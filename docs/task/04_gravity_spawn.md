@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/gravity_cascade.md](../design/gravity_cascade.md) — GravitySystem、SpawnSystem、FallInfo、SpawnInfo |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (数据结构: BoardData, TileData)

@@ -10,7 +10,7 @@
 | ↗ 产出 | [Task 18-25] — 由 ServiceInitializer 注册和注入的各服务类 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (IPersistentStorage, GodotFileStorage, IDataSource)

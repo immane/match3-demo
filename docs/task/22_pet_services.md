@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/pet_system.md](../design/pet_system.md) §6 (服务层), §7 (进化系统), §8 (序列化与持久化) |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 20 (PetDefinition, PetRarity — 枚举与 Resource 定义)

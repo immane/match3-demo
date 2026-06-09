@@ -1,0 +1,196 @@
+[gd_scene format=3 uid="uid://bg8vmk82n3q7w"]
+
+[ext_resource type="Script" uid="uid://bksm5lscn5tky" path="res://scripts/gacha/ui/GachaBannerUI.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c8uu0ite3obhr" path="res://assets/images/gacha_bg.jpg" id="2_mpila"]
+
+[node name="GachaBannerUI" type="Control" unique_id=673839892]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1148659698]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.06, 0.06, 0.14, 1)
+
+[node name="GachaBg" type="Sprite2D" parent="Background" unique_id=2042773432]
+position = Vector2(541.00006, 965.00006)
+scale = Vector2(0.78255206, 0.78255206)
+texture = ExtResource("2_mpila")
+
+[node name="HeaderPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 0.0
+anchor_right = 1.0
+offset_top = 0.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="HeaderBox" type="HBoxContainer" parent="HeaderPanel" unique_id=1340913176]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderIcon" type="Label" parent="HeaderPanel/HeaderBox" unique_id=2042904020]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "✨"
+horizontal_alignment = 1
+
+[node name="HeaderTitle" type="VBoxContainer" parent="HeaderPanel/HeaderBox" unique_id=2141393152]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleLabel" type="Label" parent="HeaderPanel/HeaderBox/HeaderTitle" unique_id=1583627121]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Gacha"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="HeaderPanel/HeaderBox/HeaderTitle" unique_id=123623723]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Summon new pets!"
+horizontal_alignment = 1
+
+[node name="CoinBadge" type="PanelContainer" parent="HeaderPanel/HeaderBox" unique_id=696319590]
+layout_mode = 2
+
+[node name="CoinLabel" type="Label" parent="HeaderPanel/HeaderBox/CoinBadge" unique_id=2051492161]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "💰 0"
+
+[node name="CloseButton" type="Button" parent="HeaderPanel/HeaderBox" unique_id=1511325008]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "✕"
+
+[node name="MainArea" type="VBoxContainer" parent="." unique_id=1102898602]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -280.0
+offset_top = 159.0
+offset_right = 280.0
+offset_bottom = 259.0
+grow_horizontal = 2
+theme_override_constants/separation = 16
+
+[node name="BannerCard" type="PanelContainer" parent="MainArea" unique_id=2112685438]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BannerVBox" type="VBoxContainer" parent="MainArea/BannerCard" unique_id=1090824803]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BannerName" type="Label" parent="MainArea/BannerCard/BannerVBox" unique_id=313856364]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 26
+text = "Standard Banner"
+horizontal_alignment = 1
+
+[node name="RatesRow" type="HBoxContainer" parent="MainArea/BannerCard/BannerVBox" unique_id=985801120]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="RateCommon" type="Label" parent="MainArea/BannerCard/BannerVBox/RatesRow" unique_id=684659984]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "⬤ 70%"
+
+[node name="RateRare" type="Label" parent="MainArea/BannerCard/BannerVBox/RatesRow" unique_id=1822824567]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "⬤ 22%"
+
+[node name="RateEpic" type="Label" parent="MainArea/BannerCard/BannerVBox/RatesRow" unique_id=1746486126]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.2, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "⬤ 6%"
+
+[node name="RateLegend" type="Label" parent="MainArea/BannerCard/BannerVBox/RatesRow" unique_id=639443879]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0, 1)
+theme_override_font_sizes/font_size = 13
+text = "⬤ 2%"
+
+[node name="PityRow" type="HBoxContainer" parent="MainArea/BannerCard/BannerVBox" unique_id=849938036]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="PityBar" type="ProgressBar" parent="MainArea/BannerCard/BannerVBox/PityRow" unique_id=166458762]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 90.0
+show_percentage = false
+
+[node name="PityText" type="Label" parent="MainArea/BannerCard/BannerVBox/PityRow" unique_id=709645766]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+text = "SSR in 90"
+
+[node name="ButtonArea" type="VBoxContainer" parent="." unique_id=1624210351]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="PullOnceBtn" type="Button" parent="ButtonArea" unique_id=370901698]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "Pull ×1"
+
+[node name="PullMultiBtn" type="Button" parent="ButtonArea" unique_id=1807223321]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 26
+text = "Pull ×10"
+
+[node name="ResultContainer" type="Control" parent="." unique_id=1130736184]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

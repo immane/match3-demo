@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/currency_system.md](../design/currency_system.md) — 完整货币系统设计 (ICurrencyService, CurrencyService, CurrencySaveData, IPersistentStorage) |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (IPersistentStorage — `scripts/utils/IPersistentStorage.cs`，异步泛型接口)

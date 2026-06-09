@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PetDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/pets/data/PetDefinition.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+Id = "fox_legendary_01"
+DisplayName = "Nine-Tailed Fox"
+Type = 4
+Rarity = 3
+BaseLevel = 1
+MaxLevel = 50
+Description = "A legendary nine-tailed fox of immense power"

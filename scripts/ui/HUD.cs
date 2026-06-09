@@ -9,122 +9,219 @@ public partial class HUD : CanvasLayer
 	private Label _comboLabel;
 	private Label _movesLabel;
 	private Label _timerLabel;
+	private Label _currencyLabel;
 	private Button _pauseButton;
+	private ProgressBar _timerBar;
+	private PanelContainer _topBar;
+	private PanelContainer _bottomBar;
 
 	private int _displayedScore;
 
 	public override void _Ready()
 	{
 		AddToGroup("hud");
-
-		_scoreLabel = GetNode<Label>("TopPanel/HBoxContainer/ScoreSection/ScoreLabel");
-		_bestScoreLabel = GetNode<Label>("TopPanel/HBoxContainer/ScoreSection/BestScoreLabel");
-		_comboLabel = GetNode<Label>("TopPanel/HBoxContainer/ComboSection/ComboLabel");
-		_movesLabel = GetNode<Label>("TopPanel/HBoxContainer/MovesSection/MovesLabel");
-		_pauseButton = GetNode<Button>("PauseButton");
+		BuildUI();
 
 		EventBus.Instance.ScoreChanged += OnScoreChanged;
 		EventBus.Instance.ComboUpdated += OnComboUpdated;
 		EventBus.Instance.MovesChanged += OnMovesChanged;
 		EventBus.Instance.TimeChanged += OnTimeChanged;
+		EventBus.Instance.CurrencyChanged += OnCurrencyChanged;
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Instance.ScoreChanged -= OnScoreChanged;
+		EventBus.Instance.ComboUpdated -= OnComboUpdated;
+		EventBus.Instance.MovesChanged -= OnMovesChanged;
+		EventBus.Instance.TimeChanged -= OnTimeChanged;
+		EventBus.Instance.CurrencyChanged -= OnCurrencyChanged;
+	}
+
+	private void BuildUI()
+	{
+		var viewW = GetViewport().GetVisibleRect().Size.X;
+
+		// ── Top bar ──
+		_topBar = new PanelContainer();
+		_topBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+		_topBar.OffsetBottom = 56;
+		AddChild(_topBar);
+
+		var topStyle = new StyleBoxFlat();
+		topStyle.BgColor = new Color(0.06f, 0.06f, 0.12f, 0.92f);
+		topStyle.CornerRadiusBottomLeft = 12;
+		topStyle.CornerRadiusBottomRight = 12;
+		_topBar.AddThemeStyleboxOverride("panel", topStyle);
+
+		var topRow = new HBoxContainer();
+		topRow.AddThemeConstantOverride("separation", 8);
+		topRow.Alignment = BoxContainer.AlignmentMode.Center;
+		topRow.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 10);
+		_topBar.AddChild(topRow);
+
+		// Score block
+		var scoreBox = new VBoxContainer();
+		scoreBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		topRow.AddChild(scoreBox);
+		_scoreLabel = MakeLabel("0", 22, new Color(1f, 0.85f, 0.2f));
+		scoreBox.AddChild(_scoreLabel);
+		_bestScoreLabel = MakeLabel("BEST 0", 14, new Color(0.6f, 0.6f, 0.6f));
+		scoreBox.AddChild(_bestScoreLabel);
+
+		// Separator
+		topRow.AddChild(MakeSeparator());
+
+		// Moves block
+		var movesBox = new VBoxContainer();
+		movesBox.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		topRow.AddChild(movesBox);
+		_movesLabel = MakeLabel("30", 24, new Color(1f, 1f, 1f));
+		movesBox.AddChild(_movesLabel);
+		var movesCaption = MakeLabel("MOVES", 12, new Color(0.5f, 0.5f, 0.6f));
+		movesBox.AddChild(movesCaption);
+
+		// Separator
+		topRow.AddChild(MakeSeparator());
+
+		// Timer block
+		var timerBox = new VBoxContainer();
+		timerBox.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		topRow.AddChild(timerBox);
+		_timerLabel = MakeLabel("30", 24, new Color(0.4f, 0.9f, 1f));
+		timerBox.AddChild(_timerLabel);
+		var timerCaption = MakeLabel("TIMER", 12, new Color(0.5f, 0.5f, 0.6f));
+		timerBox.AddChild(timerCaption);
+
+		// Separator
+		topRow.AddChild(MakeSeparator());
+
+		// Currency block
+		var currBox = new VBoxContainer();
+		currBox.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		topRow.AddChild(currBox);
+		_currencyLabel = MakeLabel("0", 22, new Color(1f, 0.85f, 0.2f));
+		currBox.AddChild(_currencyLabel);
+		var currCaption = MakeLabel("COINS", 12, new Color(0.5f, 0.5f, 0.6f));
+		currBox.AddChild(currCaption);
+
+		// Pause button
+		_pauseButton = new Button();
+		_pauseButton.Text = "II";
+		_pauseButton.CustomMinimumSize = new Vector2(40, 36);
+		_pauseButton.AddThemeFontSizeOverride("font_size", 18);
+		_pauseButton.Flat = true;
 		_pauseButton.Pressed += OnPausePressed;
+		topRow.AddChild(_pauseButton);
 
-		_scoreLabel.AddThemeFontSizeOverride("font_size", 26);
-		_bestScoreLabel.AddThemeFontSizeOverride("font_size", 22);
-		_comboLabel.AddThemeFontSizeOverride("font_size", 32);
-		_movesLabel.AddThemeFontSizeOverride("font_size", 26);
+		// ── Timer bar ──
+		_timerBar = new ProgressBar();
+		_timerBar.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+		_timerBar.OffsetTop = 58;
+		_timerBar.OffsetBottom = 64;
+		_timerBar.MaxValue = 30;
+		_timerBar.Value = 30;
+		_timerBar.ShowPercentage = false;
+		var barStyle = new StyleBoxFlat();
+		barStyle.BgColor = new Color(0.4f, 0.9f, 1f, 0.6f);
+		_timerBar.AddThemeStyleboxOverride("fill", barStyle);
+		var barBg = new StyleBoxFlat();
+		barBg.BgColor = new Color(0f, 0f, 0f, 0.3f);
+		_timerBar.AddThemeStyleboxOverride("background", barBg);
+		AddChild(_timerBar);
 
-		_scoreLabel.AddThemeColorOverride("font_color", new Color("ffd700"));
-		_bestScoreLabel.AddThemeColorOverride("font_color", new Color("aaaaaa"));
-		_comboLabel.AddThemeColorOverride("font_color", new Color("ffaa00"));
-		_movesLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
-
-		var timerSection = new VBoxContainer();
-		timerSection.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-		_timerLabel = new Label();
-		_timerLabel.Text = "TIME: 30";
-		_timerLabel.AddThemeFontSizeOverride("font_size", 26);
-		_timerLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
-		timerSection.AddChild(_timerLabel);
-		GetNode<HBoxContainer>("TopPanel/HBoxContainer").AddChild(timerSection);
+		// ── Combo (center screen, shown only when active) ──
+		_comboLabel = new Label();
+		_comboLabel.Hide();
+		_comboLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_comboLabel.VerticalAlignment = VerticalAlignment.Center;
+		_comboLabel.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+		_comboLabel.OffsetTop = 130;
+		_comboLabel.OffsetBottom = 180;
+		_comboLabel.OffsetLeft = -200;
+		_comboLabel.OffsetRight = 200;
+		_comboLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		AddChild(_comboLabel);
 
 		UpdateDisplay();
 	}
 
+	private static Label MakeLabel(string text, int size, Color color)
+	{
+		var l = new Label();
+		l.Text = text;
+		l.HorizontalAlignment = HorizontalAlignment.Center;
+		l.AddThemeFontSizeOverride("font_size", size);
+		l.AddThemeColorOverride("font_color", color);
+		return l;
+	}
+
+	private static VSeparator MakeSeparator()
+	{
+		var s = new VSeparator();
+		s.CustomMinimumSize = new Vector2(2, 36);
+		s.AddThemeColorOverride("separator", new Color(1f, 1f, 1f, 0.15f));
+		return s;
+	}
+
 	private void UpdateDisplay()
 	{
-		_scoreLabel.Text = $"SCORE: {_displayedScore}";
-		_bestScoreLabel.Text = $"BEST: {GameData.Instance.HighScore}";
-		_movesLabel.Text = $"MOVES: {GameData.Instance.MovesRemaining}";
+		_scoreLabel.Text = $"{_displayedScore}";
+		_bestScoreLabel.Text = $"BEST {GameData.Instance.HighScore}";
+		_movesLabel.Text = $"{GameData.Instance.MovesRemaining}";
+		_timerLabel.Text = $"{Mathf.CeilToInt(GameData.Instance.TimeRemaining)}";
+		_timerBar.Value = GameData.Instance.TimeRemaining;
+		_currencyLabel.Text = $"{GameData.Instance.GetCurrencyBalance("soft_currency")}";
 	}
 
 	private void OnScoreChanged(int newScore, int delta)
 	{
 		_displayedScore = newScore;
-		_scoreLabel.Text = $"SCORE: {newScore}";
-		_bestScoreLabel.Text = $"BEST: {GameData.Instance.HighScore}";
-
+		_scoreLabel.Text = $"{newScore}";
+		_bestScoreLabel.Text = $"BEST {GameData.Instance.HighScore}";
 		if (delta > 0)
 		{
-			var pos = new Vector2(360, 200);
-			EventBus.Instance.EmitSignal(EventBus.SignalName.ShowFloatingText, $"+{delta}", pos, new Color(1, 0.843137f, 0));
+			var pos = new Vector2(GetViewport().GetVisibleRect().Size.X / 2f, 200);
+			EventBus.Instance.EmitSignal(EventBus.SignalName.ShowFloatingText, $"+{delta}", pos, new Color(1f, 0.85f, 0.2f));
 		}
 	}
 
 	private void OnComboUpdated(int combo)
 	{
-		if (combo <= 1)
-		{
-			_comboLabel.Hide();
-			return;
-		}
-
-		string text = combo switch
-		{
-			2 => "Combo x2",
-			3 => "Combo x3",
-			4 => "Amazing x4",
-			5 => "Incredible x5",
-			_ => $"INSANE x{combo}!"
-		};
-
+		if (combo <= 1) { _comboLabel.Hide(); return; }
+		string text = combo switch { 2 => "COMBO x2", 3 => "COMBO x3", 4 => "AMAZING x4", 5 => "INCREDIBLE x5", _ => $"INSANE x{combo}!" };
 		_comboLabel.Text = text;
+		_comboLabel.AddThemeFontSizeOverride("font_size", 42);
+		_comboLabel.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0));
 		_comboLabel.Show();
-
-		_comboLabel.Scale = new Vector2(2.0f, 2.0f);
-		var tween = CreateTween();
-		tween.TweenProperty(_comboLabel, "scale", Vector2.One, 0.3f)
-			.SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
-
-		float r = 1.0f;
-		float g = Mathf.Clamp(1.0f - combo * 0.1f, 0.0f, 1.0f);
-		float b = Mathf.Clamp(0.3f - combo * 0.05f, 0.0f, 1.0f);
-		_comboLabel.AddThemeColorOverride("font_color", new Color(r, g, b));
+		_comboLabel.Scale = new Vector2(2f, 2f);
+		var t = CreateTween();
+		t.TweenProperty(_comboLabel, "scale", Vector2.One, 0.35f).SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
 	}
 
 	private void OnMovesChanged(int remaining)
 	{
-		_movesLabel.Text = $"MOVES: {remaining}";
-
-		if (remaining <= 5)
-			_movesLabel.AddThemeColorOverride("font_color", new Color("ff4444"));
-		else if (remaining <= 10)
-			_movesLabel.AddThemeColorOverride("font_color", new Color("ff8800"));
-		else
-			_movesLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+		_movesLabel.Text = $"{remaining}";
+		_movesLabel.AddThemeColorOverride("font_color",
+			remaining <= 5 ? new Color("ff4444") :
+			remaining <= 10 ? new Color("ff8800") :
+			new Color(1, 1, 1));
 	}
 
 	private void OnTimeChanged(float remaining)
 	{
-		int seconds = Mathf.CeilToInt(remaining);
-		_timerLabel.Text = $"TIME: {seconds}";
+		int s = Mathf.CeilToInt(remaining);
+		_timerLabel.Text = $"{s}";
+		_timerBar.Value = remaining;
+		var tColor = s <= 5 ? new Color("ff4444") : s <= 10 ? new Color("ff8800") : new Color(0.4f, 0.9f, 1f);
+		_timerLabel.AddThemeColorOverride("font_color", tColor);
+		(_timerBar.GetThemeStylebox("fill") as StyleBoxFlat)!.BgColor = new Color(tColor, 0.7f);
+	}
 
-		if (seconds <= 5)
-			_timerLabel.AddThemeColorOverride("font_color", new Color("ff4444"));
-		else if (seconds <= 10)
-			_timerLabel.AddThemeColorOverride("font_color", new Color("ff8800"));
-		else
-			_timerLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+	private void OnCurrencyChanged(string currencyId, int newBalance, int delta)
+	{
+		if (currencyId != "soft_currency") return;
+		_currencyLabel.Text = $"{newBalance}";
 	}
 
 	private void OnPausePressed()
@@ -134,11 +231,9 @@ public partial class HUD : CanvasLayer
 		sm?.TogglePause();
 	}
 
-	public override void _ExitTree()
+	private string GetCurrencyText()
 	{
-		EventBus.Instance.ScoreChanged -= OnScoreChanged;
-		EventBus.Instance.ComboUpdated -= OnComboUpdated;
-		EventBus.Instance.MovesChanged -= OnMovesChanged;
-		EventBus.Instance.TimeChanged -= OnTimeChanged;
+		int b = GameData.Instance.GetCurrencyBalance("soft_currency");
+		return b >= 1000 ? $"C: {b / 1000f:F1}K" : $"C: {b}";
 	}
 }

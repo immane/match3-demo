@@ -9,7 +9,7 @@
 | ↖ 设计 | [design/architecture_update.md](../design/architecture_update.md) §3 — 更新后的目录结构 (data/ 资源文件) |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 15 (IPersistentStorage, GodotFileStorage, WeightedRandom, IDataSource)

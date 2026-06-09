@@ -8,7 +8,7 @@
 | ↖ 设计 | [design/ui_hud.md](../design/ui_hud.md) — ScoreCalculator 分数公式 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 02 (数据结构: BoardData, TileData, MatchResult 等)

@@ -34,6 +34,22 @@ public partial class EventBus : Node
 
     [Signal] public delegate void ShowFloatingTextEventHandler(string text, Vector2 pos, Color color);
 
+	// Pet system signals
+	[Signal] public delegate void PetAcquiredEventHandler(string petDefId);
+	[Signal] public delegate void PetLeveledUpEventHandler(string petInstanceId, int newLevel);
+	[Signal] public delegate void PetEvolvedEventHandler(string oldPetInstanceId, string newPetDefId);
+	[Signal] public delegate void ActivePetChangedEventHandler(string petInstanceId);
+	[Signal] public delegate void PetFedEventHandler(string petInstanceId, string foodId);
+
+	// Gacha system signals
+	[Signal] public delegate void GachaPullResultEventHandler(string rewardId, int rarity, Godot.Collections.Dictionary pityState);
+	[Signal] public delegate void GachaPityMilestoneEventHandler(int pullsTowardGuarantee);
+	[Signal] public delegate void GachaMultiPullResultEventHandler(Godot.Collections.Array results);
+	[Signal] public delegate void GachaBeforePullEventHandler(string bannerId);
+
+	// Currency system signals
+	[Signal] public delegate void CurrencyChangedEventHandler(string currencyId, int newBalance, int delta);
+
     public override void _EnterTree()
     {
         Instance = this;

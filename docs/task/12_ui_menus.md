@@ -7,7 +7,7 @@
 | ↖ 设计 | [design/ui_hud.md](../design/ui_hud.md) — 暂停菜单、游戏结束面板设计 |
 
 ## 状态
-- [ ] 待执行
+- [x] 已完成
 
 ## 依赖
 - Task 07 (EventBus, GameData)
